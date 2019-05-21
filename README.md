@@ -1,6 +1,9 @@
 # tetris_py
-A random tetris made in command line with python
-Duck optimisation
+A random tetris made in command line with python 3.7.1
+
+run by going in src and executing ./main.py
+
+#__Duck optimisation__
 
 modules imported ("requirements"):
   - curses
@@ -20,3 +23,6 @@ modules imported ("requirements"):
 finaly goal:
   - jstris/nullpomino like (gameplay wise)
   - multiplayer
+
+known issues:
+  - last line not drawing as intended
