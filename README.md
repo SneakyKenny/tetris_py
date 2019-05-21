@@ -3,7 +3,7 @@ A random tetris made in command line with python 3.7.1
 
 run by going in src and executing ./main.py
 
-#__Duck optimisation__
+# __Duck optimisation__
 
 modules imported ("requirements"):
   - curses
