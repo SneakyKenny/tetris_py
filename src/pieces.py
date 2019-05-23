@@ -22,6 +22,26 @@ iwkL_2 = [( 0, 0), (-2, 0), (+1, 0), (-2,-1), (+1,+2)]
 iwkL_0 = [( 0, 0), (+1, 0), (-2, 0), (+1,-2), (-2,+1)]
 iwk0_L = [( 0, 0), (-1, 0), (+2, 0), (-1,+2), (+2,-1)]
 
+rotations = [0, 'R', '2', 'L']
+
+tl = (-1, 1)
+tr = (1, 1)
+bl = (-1, -1)
+br = (1, -1)
+
+north = [tl, tr, bl, br]
+east  = [tr, br, tl, bl]
+south = [br, bl, tr, tl]
+west  = [bl, tl, br, tr]
+
+t_spin_checks = [north, east, south, west]
+
+# is a T-spin      if 0 and 1 and (2 or 3)
+# is a T-spin MINI if 2 and 3 and (0 or 1)
+
+t_spin_bonus = [400, 800, 1200, 1600]
+t_spin_mini_bonus = [100, 200, 1200]
+
 class I():
     def __init__(self):
         self.x = spawn_x_4w
@@ -33,6 +53,7 @@ class I():
             [False, False, False, False]
         ]
         self.rot = '0'
+        self.rot_index = 0
 
     def to_string(self, show_pos = False):
         if show_pos:
@@ -50,6 +71,7 @@ class O():
             [False, False, False, False]
         ]
         self.rot = '0'
+        self.rot_index = 0
 
     def to_string(self, show_pos = False):
         if show_pos:
@@ -66,6 +88,7 @@ class J():
             [False, False, False]
         ]
         self.rot = '0'
+        self.rot_index = 0
 
     def to_string(self, show_pos = False):
         if show_pos:
@@ -82,6 +105,7 @@ class L():
             [False, False, False]
         ]
         self.rot = '0'
+        self.rot_index = 0
 
     def to_string(self, show_pos = False):
         if show_pos:
@@ -98,6 +122,7 @@ class S():
             [False, False, False]
         ]
         self.rot = '0'
+        self.rot_index = 0
 
     def to_string(self, show_pos = False):
         if show_pos:
@@ -114,7 +139,7 @@ class Z():
             [False, False, False]
         ]
         self.rot = '0'
-        self.rot = '0'
+        self.rot_index = 0
 
     def to_string(self, show_pos = False):
         if show_pos:
@@ -131,6 +156,7 @@ class T():
             [False, False, False]
         ]
         self.rot = '0'
+        self.rot_index = 0
 
     def to_string(self, show_pos = False):
         if show_pos:

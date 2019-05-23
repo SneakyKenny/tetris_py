@@ -9,7 +9,11 @@ import random
 #piece_list = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
 piece_list = ['J', 'S', 'Z', 'O', 'I', 'L', 'T']
 
-points_per_line = [0, 40, 100, 300, 1200]
+points_per_line = [0, 100, 300, 500, 800]
+
+time_to_drop_per_level = [1.0, 1.0, 0.793, 0.618, 0.473, 0.355, 0.262, 0.190, 0.135, 0.094, 0.064, 0.043, 0.028, 0.018, 0.011, 0.007]
+
+btb_bonus_factor = 1.5
 
 class Tetris:
     def __init__(self):
@@ -22,10 +26,24 @@ class Tetris:
         self.active_piece = None
         self.held_piece = None
 
-        self.level = 0
+        self.level = 5
         self.points = 0
 
+        self.lines_cleared = 0
+
+        self.is_back_to_back_bonus = False
+
+    def check_for_tspin(self):
+        #TODO
+        #TODO: split as check_tspin and check_tspin_mini
+        return self.active_piece.to_string() == 'T'
+
     def clear_completed_lines(self):
+        if self.active_piece and self.active_piece.to_string() == 'T':
+            for i in range(len(self.active_piece.shape)):
+                for j in range(len(self.active_piece.shape[i])):
+                    pass
+
         completed_lines = []
         for i in range(self.board.height):
             full = True
@@ -47,6 +65,15 @@ class Tetris:
                 new_line.append(False)
             self.board.board.insert(0, new_line)
 
+        old_lc = self.lines_cleared % 10
+
+        self.score(len(completed_lines))
+
+        self.lines_cleared += len(completed_lines)
+
+        if self.lines_cleared % 10 < old_lc and self.level < 15:
+            self.level += 1
+
         return len(completed_lines)
 
     def score(self, lines_cleared):
@@ -55,8 +82,7 @@ class Tetris:
     def spawn_next_piece(self, isFromHold = False):
 
         #TODO: REFACTOR THIS !!!
-        lines_cleared = self.clear_completed_lines()
-        self.score(lines_cleared)
+        self.clear_completed_lines()
 
         p = None
 
@@ -134,10 +160,11 @@ class Tetris:
             actual_i = len(self.active_piece.shape) - i - 1
             for j in range(len(mat[i])):
                 if mat[i][j]:
+                    if j + self.active_piece.x + off_x < 0 or j + self.active_piece.x + off_x >= self.board.width:
+                        return False
                     if self.board.get_state(actual_i + self.active_piece.y + off_y, j + self.active_piece.x + off_x):
                         return False
         return True
-
 
     def rotate_piece_left(self):
         if self.active_piece.to_string() == 'O':
@@ -182,6 +209,10 @@ class Tetris:
                 self.active_piece.x += tests[k][0]
                 self.active_piece.y += tests[k][1]
                 self.set_active_visibility(True)
+
+                self.active_piece.rot_index = (self.active_piece.rot_index - 1) % 4
+                self.active_piece.rot = pieces.rotations[self.active_piece.rot_index]
+
                 return True
 
         self.set_active_visibility(True)
@@ -230,6 +261,10 @@ class Tetris:
                 self.active_piece.x += tests[k][0]
                 self.active_piece.y += tests[k][1]
                 self.set_active_visibility(True)
+
+                self.active_piece.rot_index = (self.active_piece.rot_index + 1) % 4
+                self.active_piece.rot = pieces.rotations[self.active_piece.rot_index]
+
                 return True
 
         self.set_active_visibility(True)

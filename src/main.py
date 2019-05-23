@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+#http://harddrop.com/wiki/Category:Game_Mechanics
+
 #import pygame
 from __future__ import print_function
 
@@ -42,10 +44,17 @@ def main():
 
         elapsed += delta
 
-        if elapsed > 0.35:
+        if elapsed > tetris.time_to_drop_per_level[t.level]:
             elapsed = 0
             if not t.move_active_piece():
+                #if not t.check_lock_delay_and_moves():
                 t.spawn_next_piece()
+                '''else:
+                    if c == -1:
+                        t.lock_delay -= 1
+                    else:
+                        t.move_before_lock -= 1
+                '''
             display_tetris(t, win)
 
         start_time = cur_time
@@ -74,13 +83,13 @@ def main():
             t.spawn_next_piece()
         elif c == ord('c'):
             t.hold_piece()
+
         display_tetris(t, win)
 
     curses.nocbreak()
     win.keypad(False)
     curses.echo()
     curses.endwin()
-
     print('\n')
 
 if __name__ == '__main__':

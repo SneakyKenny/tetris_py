@@ -26,6 +26,23 @@ class Board:
         for j in range(self.width):
             self.board[actual_i][j] = True
 
+    def setup_tsd(self):
+        self.set_state(19, 3, '=')
+        self.set_state(18, 3, '=')
+        self.set_state(18, 6, '=')
+        self.set_state(18, 7, '=')
+        self.set_state(17, 3, '=')
+        self.set_state(17, 7, '=')
+        self.set_state(16, 3, '=')
+        self.set_state(16, 4, '=')
+        self.set_state(16, 6, '=')
+        self.set_state(16, 7, '=')
+        self.set_state(15, 3, '=')
+        self.set_state(15, 4, '=')
+        self.set_state(15, 5, '=')
+        self.set_state(15, 6, '=')
+        self.set_state(15, 7, '=')
+
     def setup_tst(self):
         self.set_state(21, 3, '=')
         self.set_state(21, 2, '=')
