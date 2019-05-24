@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.7
 
 #http://harddrop.com/wiki/Category:Game_Mechanics
 

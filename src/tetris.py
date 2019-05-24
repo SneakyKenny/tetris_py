@@ -44,11 +44,81 @@ class Tetris:
 
         self.has_held = False
 
+    def get_checks(self):
+        return pieces.t_spin_checks[self.active_piece.rot_index]
+
+    def get_a(self):
+        checks = self.get_checks()
+        aox, aoy = checks[0]
+        ay = self.active_piece.y + 1 + aoy
+        ax = self.active_piece.x + 1 + aox
+        if ay < 0 or ax < 0 or ax >= self.board.width:
+            return False
+        return self.board.get_state(ay, ax)
+
+    def get_b(self):
+        checks = self.get_checks()
+        aox, aoy = checks[1]
+        ay = self.active_piece.y + 1 + aoy
+        ax = self.active_piece.x + 1 + aox
+        if ay < 0 or ax < 0 or ax >= self.board.width:
+            return False
+        return self.board.get_state(ay, ax)
+
+    def get_c(self):
+        checks = self.get_checks()
+        aox, aoy = checks[2]
+        ay = self.active_piece.y + 1 + aoy
+        ax = self.active_piece.x + 1 + aox
+        if ay < 0 or ax < 0 or ax >= self.board.width:
+            return False
+        return self.board.get_state(ay, ax)
+
+    def get_d(self):
+        checks = self.get_checks()
+        aox, aoy = checks[3]
+        ay = self.active_piece.y + 1 + aoy
+        ax = self.active_piece.x + 1 + aox
+        if ay < 0 or ax < 0 or ax >= self.board.width:
+            return False
+        return self.board.get_state(ay, ax)
+
+    def get_t_corners(self):
+
+        a = self.get_a()
+        b = self.get_b()
+        c = self.get_c()
+        d = self.get_d()
+
+        return a, b, c, d
+
+    def check_tspin(self):
+        if self.active_piece.to_string() != 'T':
+            return False
+
+        a, b, c, d = self.get_t_corners()
+
+        return a and b and (c or d)
+
+    def check_mini_tspin(self):
+        if self.active_piece.to_string() != 'T':
+            return False
+
+        a, b, c, d = self.get_t_corners()
+
+        return c and d and (a or b)
+
     def clear_completed_lines(self):
-        if self.active_piece and self.active_piece.to_string() == 'T':
-            for i in range(len(self.active_piece.shape)):
-                for j in range(len(self.active_piece.shape[i])):
-                    pass
+
+        is_tspin = self.check_tspin()
+        is_mini_tspin = self.check_mini_tspin()
+
+        '''
+        if is_tspin:
+            print('T-SPIN !')
+        if is_mini_tspin:
+            print('T-SPIN MINI !')
+        '''
 
         num_completed_lines = 0
         completed_lines = []
@@ -75,7 +145,7 @@ class Tetris:
 
         old_lc = self.lines_cleared % 10
 
-        self.score(num_completed_lines)
+        self.score(num_completed_lines, is_tspin, is_mini_tspin)
 
         self.lines_cleared += num_completed_lines
 
@@ -84,8 +154,27 @@ class Tetris:
 
         return num_completed_lines
 
-    def score(self, lines_cleared):
-        self.points += (self.level + 1) * points_per_line[lines_cleared]
+    def score(self, lines_cleared, is_tspin, is_mini_tspin):
+
+        if lines_cleared == 0:
+            return
+
+        points_scored = (self.level + 1) * points_per_line[lines_cleared]
+
+        if self.is_back_to_back_bonus:
+            points_scored *= btb_bonus_factor
+
+        print(lines_cleared, self.is_back_to_back_bonus)
+
+        # we could do this in one line but it's more explicit this way
+        if lines_cleared == 4 or is_tspin or is_mini_tspin:
+            self.is_back_to_back_bonus = True
+        else:
+            self.is_back_to_back_bonus = False
+
+        print(lines_cleared, self.is_back_to_back_bonus)
+
+        self.points += points_scored
 
     def spawn_next_piece(self, isFirstPiece = False, isFromHold = False):
 
@@ -425,7 +514,7 @@ class Tetris:
         s += ' '
         for i in range(6):
             s += l[len(l) - i - 1] + ' '
-        s += '\tScore: {}'.format(self.points)
+        s += '\tScore: {}'.format(int(self.points))
         s += '\n'
         s += self.board.get_as_str(True)
         return s
