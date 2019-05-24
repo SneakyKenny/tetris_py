@@ -1,4 +1,4 @@
 .PHONY: clean
 
 clean:
-	${RM} *.pyc
+	${RM} -rf *.pyc __pycache__

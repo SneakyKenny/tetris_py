@@ -160,6 +160,8 @@ class Tetris:
             actual_i = len(self.active_piece.shape) - i - 1
             for j in range(len(mat[i])):
                 if mat[i][j]:
+                    if i + self.active_piece.y + off_y < 0:
+                        return False
                     if j + self.active_piece.x + off_x < 0 or j + self.active_piece.x + off_x >= self.board.width:
                         return False
                     if self.board.get_state(actual_i + self.active_piece.y + off_y, j + self.active_piece.x + off_x):
