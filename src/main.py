@@ -60,13 +60,15 @@ def main():
             if c == ord('q'):
                 break
             t.remove_ghost()
+
+            old_y = t.active_piece.y
+
             if c == curses.KEY_LEFT:
                 t.move_piece('L')
             elif c == curses.KEY_RIGHT:
                 t.move_piece('R')
             elif c == curses.KEY_DOWN:
                 t.move_piece('D')
-                elapsed = 0
             elif c == curses.KEY_UP:
                 t.rotate_piece('R')
             elif c == ord('z'):
@@ -79,6 +81,9 @@ def main():
                 t.spawn_next_piece()
             elif c == ord('c'):
                 t.hold_piece()
+
+            if t.active_piece.y != old_y:
+                elapsed = 0
 
             display_tetris(t, win)
 

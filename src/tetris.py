@@ -29,9 +29,9 @@ class Tetris:
     def __init__(self):
         self.board = board.Board()
         self.bucket = piece_list[:]
-        #random.shuffle(self.bucket)
+        random.shuffle(self.bucket)
         self.second_bucket = piece_list[:]
-        #random.shuffle(self.second_bucket)
+        random.shuffle(self.second_bucket)
         self.active_piece = None
         self.held_piece = None
 
@@ -164,15 +164,11 @@ class Tetris:
         if self.is_back_to_back_bonus:
             points_scored *= btb_bonus_factor
 
-        print(lines_cleared, self.is_back_to_back_bonus)
-
         # we could do this in one line but it's more explicit this way
         if lines_cleared == 4 or is_tspin or is_mini_tspin:
             self.is_back_to_back_bonus = True
         else:
             self.is_back_to_back_bonus = False
-
-        print(lines_cleared, self.is_back_to_back_bonus)
 
         self.points += points_scored
 
