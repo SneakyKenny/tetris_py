@@ -35,7 +35,7 @@ class Tetris:
         self.active_piece = None
         self.held_piece = None
 
-        self.level = 5
+        self.level = 1
         self.points = 0
 
         self.lines_cleared = 0
@@ -416,6 +416,8 @@ class Tetris:
 
     def tetris_as_str(self):
         self.draw_ghost()
+
+        self.set_visible()
 
         l = self.second_bucket + self.bucket
         s = ''
