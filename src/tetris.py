@@ -40,9 +40,11 @@ class Tetris:
 
         self.lines_cleared = 0
 
-        self.is_back_to_back_bonus = False
+        self.is_back_to_back_bonus = False #TODO
 
         self.has_held = False
+        self.cur_rot_is_tspin = False
+        self.is_eligible_for_t_spin = False
 
     def get_checks(self):
         return pieces.t_spin_checks[self.active_piece.rot_index]
@@ -53,7 +55,7 @@ class Tetris:
         ay = self.active_piece.y + 1 + aoy
         ax = self.active_piece.x + 1 + aox
         if ay < 0 or ax < 0 or ax >= self.board.width:
-            return False
+            return True
         return self.board.get_state(ay, ax)
 
     def get_b(self):
@@ -62,7 +64,7 @@ class Tetris:
         ay = self.active_piece.y + 1 + aoy
         ax = self.active_piece.x + 1 + aox
         if ay < 0 or ax < 0 or ax >= self.board.width:
-            return False
+            return True
         return self.board.get_state(ay, ax)
 
     def get_c(self):
@@ -71,7 +73,7 @@ class Tetris:
         ay = self.active_piece.y + 1 + aoy
         ax = self.active_piece.x + 1 + aox
         if ay < 0 or ax < 0 or ax >= self.board.width:
-            return False
+            return True
         return self.board.get_state(ay, ax)
 
     def get_d(self):
@@ -80,7 +82,7 @@ class Tetris:
         ay = self.active_piece.y + 1 + aoy
         ax = self.active_piece.x + 1 + aox
         if ay < 0 or ax < 0 or ax >= self.board.width:
-            return False
+            return True
         return self.board.get_state(ay, ax)
 
     def get_t_corners(self):
@@ -110,8 +112,12 @@ class Tetris:
 
     def clear_completed_lines(self):
 
-        is_tspin = self.check_tspin()
-        is_mini_tspin = self.check_mini_tspin()
+        is_tspin = self.cur_rot_is_tspin and self.check_tspin()
+        is_mini_tspin = self.cur_rot_is_tspin and self.check_mini_tspin()
+
+        if is_mini_tspin and self.is_eligible_for_t_spin:
+            is_tspin = True
+            is_mini_tspin = False
 
         if is_tspin:
             print('T-SPIN !')
@@ -177,6 +183,8 @@ class Tetris:
         if not isFirstPiece:
             #TODO: REFACTOR THIS !!!
             self.clear_completed_lines()
+
+        self.is_eligible_for_t_spin = False
 
         p = None
 
@@ -314,6 +322,11 @@ class Tetris:
                 self.active_piece.rot_index = (self.active_piece.rot_index - 1) % 4
                 self.active_piece.rot = pieces.rotations[self.active_piece.rot_index]
 
+                if self.active_piece.to_string() == 'T':
+                    self.cur_rot_is_tspin = self.check_tspin() or self.check_mini_tspin()
+                    if k == 4:
+                        self.is_eligible_for_t_spin = True
+
                 return True
 
         self.set_visible()
@@ -362,6 +375,11 @@ class Tetris:
 
                 self.active_piece.rot_index = (self.active_piece.rot_index + 1) % 4
                 self.active_piece.rot = pieces.rotations[self.active_piece.rot_index]
+
+                if self.active_piece.to_string() == 'T':
+                    self.cur_rot_is_tspin = self.check_tspin() or self.check_mini_tspin()
+                    if k == 4:
+                        self.is_eligible_for_t_spin = True
 
                 return True
 

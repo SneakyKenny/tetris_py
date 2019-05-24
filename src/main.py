@@ -13,9 +13,7 @@ import custom_tools
 
 import time
 
-
 from pieces import *
-
 
 def display_tetris(t, win):
     lines = t.tetris_as_str().split('\n')
@@ -55,6 +53,8 @@ def main():
                 if not t.move_active_piece():
                     if not t.spawn_next_piece():
                         break
+
+                t.cur_rot_is_tspin = False
                 display_tetris(t, win)
 
             start_time = cur_time
@@ -73,7 +73,8 @@ def main():
             elif c == curses.KEY_RIGHT:
                 t.move_piece('R')
             elif c == curses.KEY_DOWN:
-                t.move_piece('D')
+                if t.move_piece('D'):
+                    t.cur_rot_is_tspin = False
             elif c == curses.KEY_UP:
                 t.rotate_piece('R')
             elif c == ord('z'):
@@ -81,11 +82,17 @@ def main():
             elif c == ord('x'):
                 t.rotate_piece('180')
             elif c == ord(' '):
+                has_moved = False
                 while t.move_active_piece():
-                    pass
+                    has_moved = True
+                if has_moved:
+                    t.cur_rot_is_tspin = False
                 t.spawn_next_piece()
             elif c == ord('c'):
                 t.hold_piece()
+            elif c == curses.KEY_F4:
+                t = tetris.Tetris()
+                t.spawn_next_piece(isFirstPiece = True)
 
             if t.active_piece.y != old_y:
                 elapsed = 0
