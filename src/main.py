@@ -23,6 +23,7 @@ def display_tetris(t, win):
 
 def main():
     t = tetris.Tetris()
+
     t.spawn_next_piece(isFirstPiece = True)
 
     win = curses.initscr()
@@ -92,7 +93,6 @@ def main():
         win.keypad(False)
         curses.echo()
         curses.endwin()
-        print('game over')
 
 if __name__ == '__main__':
     main()

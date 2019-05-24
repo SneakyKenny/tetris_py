@@ -29,9 +29,9 @@ class Tetris:
     def __init__(self):
         self.board = board.Board()
         self.bucket = piece_list[:]
-        random.shuffle(self.bucket)
+        #random.shuffle(self.bucket)
         self.second_bucket = piece_list[:]
-        random.shuffle(self.second_bucket)
+        #random.shuffle(self.second_bucket)
         self.active_piece = None
         self.held_piece = None
 
@@ -113,12 +113,10 @@ class Tetris:
         is_tspin = self.check_tspin()
         is_mini_tspin = self.check_mini_tspin()
 
-        '''
         if is_tspin:
             print('T-SPIN !')
         if is_mini_tspin:
             print('T-SPIN MINI !')
-        '''
 
         num_completed_lines = 0
         completed_lines = []
@@ -263,7 +261,7 @@ class Tetris:
             actual_i = len(self.active_piece.shape) - i - 1
             for j in range(len(mat[i])):
                 if mat[i][j]:
-                    if i + self.active_piece.y + off_y < 0:
+                    if actual_i + self.active_piece.y + off_y < 0:
                         return False
                     if j + self.active_piece.x + off_x < 0 or j + self.active_piece.x + off_x >= self.board.width:
                         return False
@@ -272,9 +270,6 @@ class Tetris:
         return True
 
     def rotate_piece_left(self):
-        if self.active_piece.to_string() == 'O':
-            return False
-
         self.set_invisible()
 
         left_rot_mat = custom_tools.matrix_left_rot(self.active_piece.shape)
@@ -325,9 +320,6 @@ class Tetris:
         return False
 
     def rotate_piece_right(self):
-        if self.active_piece.to_string() == 'O':
-            return False
-
         self.set_invisible()
 
         right_rot_mat = custom_tools.matrix_right_rot(self.active_piece.shape)
@@ -385,42 +377,44 @@ class Tetris:
 
         tests = None
 
-        if self.active_piece.to_string() != 'O':
-            if self.active_piece.to_string() == 'I':
-                if rot == '0':
-                    tests = pieces.iwk0_R
-                elif rot == 'L':
-                    tests = pieces.iwkL_0
-                elif rot == '2':
-                    tests = pieces.iwk2_L
-                elif rot == 'R':
-                    tests = pieces.iwkR_2
-                else:
-                    print('unknown rotation for I piece to the right.')
-                    return False
+        if self.active_piece.to_string() == 'I':
+            if rot == '0':
+                tests = pieces.iwk0_R
+            elif rot == 'L':
+                tests = pieces.iwkL_0
+            elif rot == '2':
+                tests = pieces.iwk2_L
+            elif rot == 'R':
+                tests = pieces.iwkR_2
             else:
-                if rot == '0':
-                    tests = pieces.all0_R
-                elif rot == 'L':
-                    tests = pieces.allL_0
-                elif rot == '2':
-                    tests = pieces.all2_L
-                elif rot == 'R':
-                    tests = pieces.allR_2
-                else:
-                    print('unknown rotation for common piece to the right.')
-                    return False
+                print('unknown rotation for I piece to the right.')
+                return False
+        else:
+            if rot == '0':
+                tests = pieces.all0_R
+            elif rot == 'L':
+                tests = pieces.allL_0
+            elif rot == '2':
+                tests = pieces.all2_L
+            elif rot == 'R':
+                tests = pieces.allR_2
+            else:
+                print('unknown rotation for common piece to the right.')
+                return False
 
-            for k in range(5):
-                if self.test_pos(rot_mat_180, tests, k):
-                    self.active_piece.shape = rot_mat_180
-                    self.active_piece.x += tests[k][0]
-                    self.active_piece.y += tests[k][1]
-                    self.set_visible()
-                    return True
-            self.set_visible()
-            return False
+        for k in range(5):
+            if self.test_pos(rot_mat_180, tests, k):
+                self.active_piece.shape = rot_mat_180
+                self.active_piece.x += tests[k][0]
+                self.active_piece.y += tests[k][1]
+                self.set_visible()
+                return True
+        self.set_visible()
+        return False
 
+        '''
+        if self.active_piece.to_string() != 'O':
+            pass
         else:
             if self.test_pos(rot_mat_180, [(0, 0)], 0):
                 self.active_piece.shape = rot_mat_180
@@ -428,6 +422,7 @@ class Tetris:
                 return True
             self.set_visible()
             return False
+        '''
 
     def rotate_piece(self, dir):
         if dir == 'R':

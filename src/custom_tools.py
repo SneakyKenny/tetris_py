@@ -18,6 +18,19 @@ def matrix_right_rot(shape):
 
     return shape
 
+def O_180_spin(rot):
+    if rot == '0':
+        return  [
+            [False, False, False, False],
+            [False,  True,  True, False],
+            [False,  True,  True, False],
+        ]
+    return [
+        [False,  True,  True, False],
+        [False,  True,  True, False],
+        [False, False, False, False],
+    ]
+
 def matrix_180_rot(shape):
     for _ in range(2):
         shape = matrix_left_rot(shape)

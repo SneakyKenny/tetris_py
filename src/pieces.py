@@ -36,9 +36,6 @@ west  = [bl, tl, br, tr]
 
 t_spin_checks = [north, east, south, west]
 
-# is a T-spin      if 0 and 1 and (2 or 3)
-# is a T-spin MINI if 2 and 3 and (0 or 1)
-
 t_spin_bonus = [400, 800, 1200, 1600]
 t_spin_mini_bonus = [100, 200, 1200]
 
@@ -65,10 +62,9 @@ class O():
         self.x = spawn_x_4w
         self.y = spawn_y
         self.shape = [
-            [False,  True,  True, False],
-            [False,  True,  True, False],
-            [False, False, False, False],
-            [False, False, False, False]
+            [ True,  True, False],
+            [ True,  True, False],
+            [False, False, False],
         ]
         self.rot = '0'
         self.rot_index = 0
