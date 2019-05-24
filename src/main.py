@@ -106,26 +106,32 @@ def main():
                 t.set_invisible()
                 t.active_piece = I()
                 t.set_visible()
+                t.remove_ghost()
             elif c == ord('2'):
                 t.set_invisible()
                 t.active_piece = O()
                 t.set_visible()
+                t.remove_ghost()
             elif c == ord('3'):
                 t.set_invisible()
                 t.active_piece = J()
                 t.set_visible()
+                t.remove_ghost()
             elif c == ord('4'):
                 t.set_invisible()
                 t.active_piece = L()
                 t.set_visible()
+                t.remove_ghost()
             elif c == ord('5'):
                 t.set_invisible()
                 t.active_piece = S()
                 t.set_visible()
+                t.remove_ghost()
             elif c == ord('6'):
                 t.set_invisible()
                 t.active_piece = Z()
                 t.set_visible()
+                t.remove_ghost()
             elif c == ord('7'):
                 t.set_invisible()
                 t.active_piece = T()

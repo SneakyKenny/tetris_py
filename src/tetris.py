@@ -19,10 +19,11 @@ piece_to_int = {
     'Z': 6
 }
 
+b2b_text = 'B2B'
 mini_tspin_text = 'Mini T-Spin'
 tspin_text = 'T-Spin'
 line_cleared_text = ['', 'Single', 'Double', 'Triple', 'Tetris']
-
+combo_text = 'combo'
 points_per_line = [0, 100, 300, 500, 800]
 
 time_to_drop_per_level = [1.0, 1.0, 0.793, 0.618, 0.473, 0.355, 0.262, 0.190, 0.135, 0.094, 0.064, 0.043, 0.028, 0.018, 0.011, 0.007]
@@ -33,9 +34,9 @@ class Tetris:
     def __init__(self):
         self.board = board.Board()
         self.bucket = piece_list[:]
-        #random.shuffle(self.bucket)
+        random.shuffle(self.bucket)
         self.second_bucket = piece_list[:]
-        #random.shuffle(self.second_bucket)
+        random.shuffle(self.second_bucket)
         self.active_piece = None
         self.held_piece = None
 
@@ -49,6 +50,8 @@ class Tetris:
         self.has_held = False
         self.cur_rot_is_tspin = False
         self.is_eligible_for_t_spin = False
+
+        self.combo = -1
 
     def get_checks(self):
         return pieces.t_spin_checks[self.active_piece.rot_index]
@@ -136,6 +139,11 @@ class Tetris:
                 num_completed_lines += 1
                 completed_lines.append(i)
 
+        if num_completed_lines > 0:
+            self.combo += 1
+        else:
+            self.combo = -1
+
         off_i = 0
         for comp in completed_lines:
             actual_i = self.board.height + self.board.hmargin - comp - 1 + off_i
@@ -157,19 +165,29 @@ class Tetris:
 
         return num_completed_lines
 
+    def print_line_clears(self, lines_cleared, is_tspin, is_mini_tspin):
+        if self.is_back_to_back_bonus:
+            print(b2b_text, end = ' ')
+        if is_tspin:
+            print(tspin_text, line_cleared_text[lines_cleared], end = '')
+        elif is_mini_tspin:
+            print(mini_tspin_text, line_cleared_text[lines_cleared], end = '')
+        else:
+            print(line_cleared_text[lines_cleared], end = '')
+
+        if self.combo > 0:
+            print(f'\t\t{self.combo} {combo_text}', end = '             \r')
+        else:
+            print('\t\t\t', end = '\r')
+
     def score(self, lines_cleared, is_tspin, is_mini_tspin):
 
-        if is_tspin:
-            print(tspin_text, line_cleared_text[lines_cleared])
-        elif is_mini_tspin:
-            print(mini_tspin_text, line_cleared_text[lines_cleared])
-        else:
-            print(line_cleared_text[lines_cleared])
+        self.print_line_clears(lines_cleared, is_tspin, is_mini_tspin)
 
         if lines_cleared == 0:
             return
 
-        points_scored = (self.level + 1) * points_per_line[lines_cleared]
+        points_scored = self.level * points_per_line[lines_cleared]
 
         if self.is_back_to_back_bonus:
             points_scored *= btb_bonus_factor
@@ -529,7 +547,7 @@ class Tetris:
         s += ' '
         for i in range(6):
             s += l[len(l) - i - 1] + ' '
-        s += '\tScore: {}'.format(int(self.points))
+        s += '\t\t\tScore: {}'.format(int(self.points))
         s += '\n'
         s += self.board.get_as_str(True)
         return s
