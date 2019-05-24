@@ -13,6 +13,10 @@ import custom_tools
 
 import time
 
+
+from pieces import *
+
+
 def display_tetris(t, win):
     lines = t.tetris_as_str().split('\n')
     for i in range(len(lines)):
@@ -87,6 +91,41 @@ def main():
                 elapsed = 0
 
             display_tetris(t, win)
+
+
+
+
+            if c == ord('1'):
+                t.set_invisible()
+                t.active_piece = I()
+                t.set_visible()
+            elif c == ord('2'):
+                t.set_invisible()
+                t.active_piece = O()
+                t.set_visible()
+            elif c == ord('3'):
+                t.set_invisible()
+                t.active_piece = J()
+                t.set_visible()
+            elif c == ord('4'):
+                t.set_invisible()
+                t.active_piece = L()
+                t.set_visible()
+            elif c == ord('5'):
+                t.set_invisible()
+                t.active_piece = S()
+                t.set_visible()
+            elif c == ord('6'):
+                t.set_invisible()
+                t.active_piece = Z()
+                t.set_visible()
+            elif c == ord('7'):
+                t.set_invisible()
+                t.active_piece = T()
+                t.set_visible()
+
+
+
 
     finally:
         curses.nocbreak()
