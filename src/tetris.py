@@ -19,6 +19,10 @@ piece_to_int = {
     'Z': 6
 }
 
+mini_tspin_text = 'Mini T-Spin'
+tspin_text = 'T-Spin'
+line_cleared_text = ['', 'Single', 'Double', 'Triple', 'Tetris']
+
 points_per_line = [0, 100, 300, 500, 800]
 
 time_to_drop_per_level = [1.0, 1.0, 0.793, 0.618, 0.473, 0.355, 0.262, 0.190, 0.135, 0.094, 0.064, 0.043, 0.028, 0.018, 0.011, 0.007]
@@ -119,11 +123,6 @@ class Tetris:
             is_tspin = True
             is_mini_tspin = False
 
-        if is_tspin:
-            print('T-SPIN !')
-        if is_mini_tspin:
-            print('T-SPIN MINI !')
-
         num_completed_lines = 0
         completed_lines = []
         for i in range(self.board.height):
@@ -159,6 +158,13 @@ class Tetris:
         return num_completed_lines
 
     def score(self, lines_cleared, is_tspin, is_mini_tspin):
+
+        if is_tspin:
+            print(tspin_text, line_cleared_text[lines_cleared])
+        elif is_mini_tspin:
+            print(mini_tspin_text, line_cleared_text[lines_cleared])
+        else:
+            print(line_cleared_text[lines_cleared])
 
         if lines_cleared == 0:
             return
