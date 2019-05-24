@@ -5,9 +5,19 @@ import pieces
 import board
 import custom_tools
 import random
-
+import time
 #piece_list = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
 piece_list = ['J', 'S', 'Z', 'O', 'I', 'L', 'T']
+
+piece_to_int = {
+    'I': 0,
+    'J': 1,
+    'L': 2,
+    'O': 3,
+    'S': 4,
+    'T': 5,
+    'Z': 6
+}
 
 points_per_line = [0, 100, 300, 500, 800]
 
@@ -22,7 +32,6 @@ class Tetris:
         #random.shuffle(self.bucket)
         self.second_bucket = piece_list[:]
         #random.shuffle(self.second_bucket)
-        #self.create_new_bucket()
         self.active_piece = None
         self.held_piece = None
 
@@ -33,10 +42,7 @@ class Tetris:
 
         self.is_back_to_back_bonus = False
 
-    def check_for_tspin(self):
-        #TODO
-        #TODO: split as check_tspin and check_tspin_mini
-        return self.active_piece.to_string() == 'T'
+        self.has_held = False
 
     def clear_completed_lines(self):
         if self.active_piece and self.active_piece.to_string() == 'T':
@@ -44,6 +50,7 @@ class Tetris:
                 for j in range(len(self.active_piece.shape[i])):
                     pass
 
+        num_completed_lines = 0
         completed_lines = []
         for i in range(self.board.height):
             full = True
@@ -53,6 +60,7 @@ class Tetris:
                 if full:
                     j += 1
             if full:
+                num_completed_lines += 1
                 completed_lines.append(i)
 
         off_i = 0
@@ -62,27 +70,30 @@ class Tetris:
             l = self.board.board.pop(actual_i)
             new_line = []
             for _ in range(self.board.width):
-                new_line.append(False)
+                new_line.append(None)
             self.board.board.insert(0, new_line)
 
         old_lc = self.lines_cleared % 10
 
-        self.score(len(completed_lines))
+        self.score(num_completed_lines)
 
-        self.lines_cleared += len(completed_lines)
+        self.lines_cleared += num_completed_lines
 
         if self.lines_cleared % 10 < old_lc and self.level < 15:
             self.level += 1
 
-        return len(completed_lines)
+        return num_completed_lines
 
     def score(self, lines_cleared):
         self.points += (self.level + 1) * points_per_line[lines_cleared]
 
-    def spawn_next_piece(self, isFromHold = False):
+    def spawn_next_piece(self, isFirstPiece = False, isFromHold = False):
 
-        #TODO: REFACTOR THIS !!!
-        self.clear_completed_lines()
+        self.has_held = False
+
+        if not isFirstPiece:
+            #TODO: REFACTOR THIS !!!
+            self.clear_completed_lines()
 
         p = None
 
@@ -122,9 +133,10 @@ class Tetris:
             actual_i = len(new_piece.shape) - i - 1
             for j in range(len(new_piece.shape[i])):
                 if new_piece.shape[i][j]:
-                    self.board.set_state(actual_i + new_piece.y, j + new_piece.x, True)
+                    self.board.set_state(actual_i + new_piece.y, j + new_piece.x, piece_to_int[p])
 
         self.active_piece = new_piece
+
         return True
 
     def set_active_visibility(self, vis):
@@ -134,23 +146,29 @@ class Tetris:
                 if self.active_piece.shape[i][j]:
                     self.board.set_state(actual_i + self.active_piece.y, j + self.active_piece.x, vis)
 
+    def set_invisible(self):
+        self.set_active_visibility(None)
+
+    def set_visible(self):
+        self.set_active_visibility(piece_to_int[self.active_piece.to_string()])
+
     def move_active_piece(self):
-        self.set_active_visibility(False)
+        self.set_invisible()
 
         for i in range(len(self.active_piece.shape)):
             actual_i = len(self.active_piece.shape) - i - 1
             for j in range(len(self.active_piece.shape[i])):
                 if self.active_piece.shape[i][j]:
                     if actual_i + self.active_piece.y - 1 < 0:
-                        self.set_active_visibility(True)
+                        self.set_visible()
                         return False
                     if self.board.get_state(actual_i + self.active_piece.y - 1, j + self.active_piece.x):
-                        self.set_active_visibility(True)
+                        self.set_visible()
                         return False
 
         self.active_piece.y -= 1
 
-        self.set_active_visibility(True)
+        self.set_visible()
 
         return True
 
@@ -172,7 +190,7 @@ class Tetris:
         if self.active_piece.to_string() == 'O':
             return False
 
-        self.set_active_visibility(False)
+        self.set_invisible()
 
         left_rot_mat = custom_tools.matrix_left_rot(self.active_piece.shape)
 
@@ -210,21 +228,22 @@ class Tetris:
                 self.active_piece.shape = left_rot_mat
                 self.active_piece.x += tests[k][0]
                 self.active_piece.y += tests[k][1]
-                self.set_active_visibility(True)
+
+                self.set_visible()
 
                 self.active_piece.rot_index = (self.active_piece.rot_index - 1) % 4
                 self.active_piece.rot = pieces.rotations[self.active_piece.rot_index]
 
                 return True
 
-        self.set_active_visibility(True)
+        self.set_visible()
         return False
 
     def rotate_piece_right(self):
         if self.active_piece.to_string() == 'O':
             return False
 
-        self.set_active_visibility(False)
+        self.set_invisible()
 
         right_rot_mat = custom_tools.matrix_right_rot(self.active_piece.shape)
 
@@ -262,18 +281,18 @@ class Tetris:
                 self.active_piece.shape = right_rot_mat
                 self.active_piece.x += tests[k][0]
                 self.active_piece.y += tests[k][1]
-                self.set_active_visibility(True)
+                self.set_visible()
 
                 self.active_piece.rot_index = (self.active_piece.rot_index + 1) % 4
                 self.active_piece.rot = pieces.rotations[self.active_piece.rot_index]
 
                 return True
 
-        self.set_active_visibility(True)
+        self.set_visible()
         return False
 
     def rotate_piece_180(self):
-        self.set_active_visibility(False)
+        self.set_invisible()
 
         rot_mat_180 = custom_tools.matrix_180_rot(self.active_piece.shape)
 
@@ -312,17 +331,17 @@ class Tetris:
                     self.active_piece.shape = rot_mat_180
                     self.active_piece.x += tests[k][0]
                     self.active_piece.y += tests[k][1]
-                    self.set_active_visibility(True)
+                    self.set_visible()
                     return True
-            self.set_active_visibility(True)
+            self.set_visible()
             return False
 
         else:
             if self.test_pos(rot_mat_180, [(0, 0)], 0):
                 self.active_piece.shape = rot_mat_180
-                self.set_active_visibility(True)
+                self.set_visible()
                 return True
-            self.set_active_visibility(True)
+            self.set_visible()
             return False
 
     def rotate_piece(self, dir):
@@ -342,14 +361,14 @@ class Tetris:
                         return False
 
         test = [(xdir, 0)]
-        self.set_active_visibility(False)
+        self.set_invisible()
 
         if self.test_pos(self.active_piece.shape, test, 0):
             self.active_piece.x += xdir
-            self.set_active_visibility(True)
+            self.set_visible()
             return True
 
-        self.set_active_visibility(True)
+        self.set_visible()
         return False
 
     def move_piece(self, dir):
@@ -359,7 +378,45 @@ class Tetris:
             return self.move_piece_horizontal(-1)
         return self.move_active_piece() # I should rename this to move piece down
 
+    def move_ghost(self, ghost):
+        self.set_invisible()
+
+        for i in range(len(ghost.shape)):
+            actual_i = len(ghost.shape) - i - 1
+            for j in range(len(ghost.shape[i])):
+                if ghost.shape[i][j]:
+                    if actual_i + ghost.y - 1 < 0:
+                        self.set_visible()
+                        return False
+                    if self.board.get_state(actual_i + ghost.y - 1, j + ghost.x):
+                        self.set_visible()
+                        return False
+
+        ghost.y -= 1
+
+        self.set_visible()
+
+        return True
+
+    def draw_ghost(self):
+        ghost = custom_tools.copy(self.active_piece)
+        while self.move_ghost(ghost):
+            pass
+
+        piece_state = -(piece_to_int[self.active_piece.to_string()] + 1)
+
+        for i in range(len(ghost.shape)):
+            actual_i = len(ghost.shape) - i - 1
+            for j in range(len(ghost.shape[i])):
+                if ghost.shape[i][j]:
+                    self.board.set_state(actual_i + ghost.y, j + ghost.x, piece_state)
+
+    def remove_ghost(self):
+        self.board.remove_ghost()
+
     def tetris_as_str(self):
+        self.draw_ghost()
+
         l = self.second_bucket + self.bucket
         s = ''
         s += '[]' if self.held_piece == None else '[' + self.held_piece + ']'
@@ -372,14 +429,19 @@ class Tetris:
         return s
 
     def hold_piece(self):
+        if self.has_held:
+            return
+
         if self.held_piece == None:
             self.held_piece = self.active_piece.to_string()
-            self.set_active_visibility(False)
+            self.set_invisible()
             self.spawn_next_piece()
-            self.set_active_visibility(True)
+            self.set_visible()
         else:
             old_active = self.active_piece.to_string()
-            self.set_active_visibility(False)
+            self.set_invisible()
             self.spawn_next_piece(isFromHold = True)
-            self.set_active_visibility(True)
+            self.set_visible()
             self.held_piece = old_active
+
+        self.has_held = True

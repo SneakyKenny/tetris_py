@@ -3,7 +3,7 @@
 #http://harddrop.com/wiki/Category:Game_Mechanics
 
 #import pygame
-from __future__ import print_function
+#from __future__ import print_function
 
 import curses
 from curses import wrapper
@@ -16,13 +16,14 @@ import time
 def display_tetris(t, win):
     lines = t.tetris_as_str().split('\n')
     for i in range(len(lines)):
-        win.addstr(i, 0, lines[i])
+        for j in range(len(lines[i])):
+            win.addch(i, j, lines[i][j])
 
     win.refresh()
 
 def main():
     t = tetris.Tetris()
-    t.spawn_next_piece()
+    t.spawn_next_piece(isFirstPiece = True)
 
     win = curses.initscr()
     win.clear()
@@ -47,7 +48,8 @@ def main():
             if elapsed > tetris.time_to_drop_per_level[t.level]:
                 elapsed = 0
                 if not t.move_active_piece():
-                    t.spawn_next_piece()
+                    if not t.spawn_next_piece():
+                        break
                 display_tetris(t, win)
 
             start_time = cur_time
@@ -57,6 +59,7 @@ def main():
 
             if c == ord('q'):
                 break
+            t.remove_ghost()
             if c == curses.KEY_LEFT:
                 t.move_piece('L')
             elif c == curses.KEY_RIGHT:
@@ -84,6 +87,7 @@ def main():
         win.keypad(False)
         curses.echo()
         curses.endwin()
+        print('game over')
 
 if __name__ == '__main__':
     main()

@@ -23,3 +23,43 @@ def matrix_180_rot(shape):
         shape = matrix_left_rot(shape)
 
     return shape
+
+def copy_matrix(m):
+    ret = []
+    for i in range(len(m)):
+        line = []
+        for j in range(len(m[i])):
+            line.append(m[i][j])
+        ret.append(line)
+    return ret
+
+def copy(piece):
+    s = piece.to_string()
+
+    new_piece = None
+
+    if s == 'I':
+        new_piece = pieces.I()
+    elif s == 'J':
+        new_piece = pieces.J()
+    elif s == 'L':
+        new_piece = pieces.L()
+    elif s == 'O':
+        new_piece = pieces.O()
+    elif s == 'S':
+        new_piece = pieces.S()
+    elif s == 'T':
+        new_piece = pieces.S()
+    elif s == 'Z':
+        new_piece = pieces.Z()
+    else:
+        print(f'unknown piece type: {s}')
+        return None
+
+    new_piece.x = piece.x
+    new_piece.y = piece.y
+    new_piece.rot = piece.rot
+    new_piece.rot_index = piece.rot_index
+
+    new_piece.shape = copy_matrix(piece.shape)
+    return new_piece
