@@ -8,16 +8,13 @@ make clean to remove compiled python files
 # __Duck optimisation__
 
 modules imported ("requirements"):
-- curses (environment to draw the board and just the tetris game overall)
-- tkinter (read keyboard input)
-- os (call console 'clear' command)
+- pygame
 - time
 - random
 
 #TODO:
 - more scoring methods (modern tetris like)
 - lock delay
-- das/arr (almost implemented, must make it depend on time and not windows key held thingy)
 - gargabe
 - game modes (rnjesus: 2nd player controls pieces to come for the tetris player, while he tries to complete missions)
 - some sort of IA to battle ?
@@ -26,7 +23,3 @@ modules imported ("requirements"):
 finaly goal:
 - jstris/nullpomino like (gameplay wise)
 - multiplayer
-
-known issues:
-- last line not drawing as intended
-- when holding a piece, it might happen that the piece held sticks to the field
