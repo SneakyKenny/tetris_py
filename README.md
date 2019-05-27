@@ -1,7 +1,7 @@
 # tetris_py
-A random tetris made in command line with python 3.7.1
+A random tetris made with python 3.7.1
 
-run by going in src and executing ./main.py
+run by executing main.py
 
 make clean to remove compiled python files
 
