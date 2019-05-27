@@ -99,7 +99,7 @@ class I():
 
 class O():
     def __init__(self):
-        self.x = spawn_x_4w
+        self.x = spawn_x_4w + 1
         self.y = spawn_y
         self.shape = O_matrix
         self.rot = '0'
