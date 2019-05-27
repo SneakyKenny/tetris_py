@@ -26,6 +26,9 @@ line_cleared_text = ['', 'Single', 'Double', 'Triple', 'Tetris']
 combo_text = 'combo'
 points_per_line = [0, 100, 300, 500, 800]
 
+points_per_t_spin = [400, 800, 1200, 1600]
+points_per_mini_t_spin = [100, 200, 1200, 3200]
+
 time_to_drop_per_level = [1.0, 1.0, 0.793, 0.618, 0.473, 0.355, 0.262, 0.190, 0.135, 0.094, 0.064, 0.043, 0.028, 0.018, 0.011, 0.007]
 
 btb_bonus_factor = 1.5
@@ -40,12 +43,14 @@ class Tetris:
         self.active_piece = None
         self.held_piece = None
 
-        self.level = 1
+        self.level_up_enable = False
+
+        self.level = 4
         self.points = 0
 
         self.lines_cleared = 0
 
-        self.is_back_to_back_bonus = False #TODO
+        self.is_back_to_back_bonus = False
 
         self.has_held = False
         self.cur_rot_is_tspin = False
@@ -154,19 +159,20 @@ class Tetris:
                 new_line.append(None)
             self.board.board.insert(0, new_line)
 
-        old_lc = self.lines_cleared % 10
-
         self.score(num_completed_lines, is_tspin, is_mini_tspin)
 
-        self.lines_cleared += num_completed_lines
+        if self.level_up_enable:
+            old_lc = self.lines_cleared % 10
 
-        if self.lines_cleared % 10 < old_lc and self.level < 15:
-            self.level += 1
+            self.lines_cleared += num_completed_lines
+
+            if self.lines_cleared % 10 < old_lc and self.level < 15:
+                self.level += 1
 
         return num_completed_lines
 
     def print_line_clears(self, lines_cleared, is_tspin, is_mini_tspin):
-        if self.is_back_to_back_bonus:
+        if self.is_back_to_back_bonus and (lines_cleared == 4 or is_tspin or is_mini_tspin):
             print(b2b_text, end = ' ')
         if is_tspin:
             print(tspin_text, line_cleared_text[lines_cleared], end = '')
@@ -184,12 +190,16 @@ class Tetris:
 
         self.print_line_clears(lines_cleared, is_tspin, is_mini_tspin)
 
-        if lines_cleared == 0:
-            return
+        points_scored = 0
 
-        points_scored = self.level * points_per_line[lines_cleared]
+        if (not is_tspin) and (not is_mini_tspin):
+            points_scored = points_per_line[lines_cleared]
+        elif is_tspin:
+            points_scored = points_per_t_spin[lines_cleared]
+        else: #mini_tspin
+            points_scored = points_per_mini_t_spin[lines_cleared]
 
-        if self.is_back_to_back_bonus:
+        if self.is_back_to_back_bonus and (lines_cleared == 4 or is_tspin or is_mini_tspin):
             points_scored *= btb_bonus_factor
 
         # we could do this in one line but it's more explicit this way
@@ -197,6 +207,11 @@ class Tetris:
             self.is_back_to_back_bonus = True
         else:
             self.is_back_to_back_bonus = False
+
+        if self.combo >= 0:
+            points_scored += self.combo * 50
+
+        points_scored *= self.level
 
         self.points += points_scored
 
@@ -454,18 +469,6 @@ class Tetris:
         self.set_visible()
         return False
 
-        '''
-        if self.active_piece.to_string() != 'O':
-            pass
-        else:
-            if self.test_pos(rot_mat_180, [(0, 0)], 0):
-                self.active_piece.shape = rot_mat_180
-                self.set_visible()
-                return True
-            self.set_visible()
-            return False
-        '''
-
     def rotate_piece(self, dir):
         if dir == 'R':
             return self.rotate_piece_right()
@@ -492,6 +495,23 @@ class Tetris:
 
         self.set_visible()
         return False
+
+    def das_left(self):
+        moved = False
+        while self.move_piece('L'):
+            moved = True
+        return moved
+
+    def das_right(self):
+        moved = False
+        while self.move_piece('R'):
+            moved = True
+        return moved
+
+    def das_piece(self, dir):
+        if dir == 'L':
+            return self.das_left()
+        return self.das_right()
 
     def move_piece(self, dir):
         if dir == 'R':
@@ -532,9 +552,25 @@ class Tetris:
             for j in range(len(ghost.shape[i])):
                 if ghost.shape[i][j]:
                     self.board.set_state(actual_i + ghost.y, j + ghost.x, piece_state)
+        return ghost
+
+    def draw_active_piece(self):
+        piece_state = piece_to_int[self.active_piece.to_string()]
+        for i in range(len(self.active_piece.shape)):
+            actual_i = len(self.active_piece.shape) - i - 1
+            for j in range(len(self.active_piece.shape[i])):
+                if self.active_piece.shape[i][j]:
+                    self.board.set_state(actual_i + self.active_piece.y, j + self.active_piece.x, piece_state)
 
     def remove_ghost(self):
         self.board.remove_ghost()
+
+    def get_preview_list(self, num = 5):
+        l = self.second_bucket + self.bucket
+        ret = []
+        for i in range(len(l) - 1, len(l) - num - 1, -1):
+            ret.append(l[i])
+        return ret
 
     def tetris_as_str(self):
         self.draw_ghost()
@@ -545,9 +581,8 @@ class Tetris:
         s = ''
         s += '[]' if self.held_piece == None else '[' + self.held_piece + ']'
         s += ' '
-        for i in range(6):
-            s += l[len(l) - i - 1] + ' '
-        s += '\t\t\tScore: {}'.format(int(self.points))
+        s += ' '.join(self.get_preview_list())
+        s += '\t\t\tScore: {}         '.format(int(self.points))
         s += '\n'
         s += self.board.get_as_str(True)
         return s
@@ -556,16 +591,30 @@ class Tetris:
         if self.has_held:
             return
 
+        self.set_invisible()
+
         if self.held_piece == None:
             self.held_piece = self.active_piece.to_string()
-            self.set_invisible()
             self.spawn_next_piece()
-            self.set_visible()
         else:
             old_active = self.active_piece.to_string()
-            self.set_invisible()
             self.spawn_next_piece(isFromHold = True)
-            self.set_visible()
             self.held_piece = old_active
 
+        self.set_visible()
+
         self.has_held = True
+
+    def soft_drop_piece(self):
+        moved = False
+        while self.move_active_piece():
+            self.points += 1
+            moved = True
+        return moved
+
+    def hard_drop_piece(self):
+        moved = False
+        while self.move_active_piece():
+            self.points += 2
+            moved = True
+        return moved, self.spawn_next_piece()

@@ -39,16 +39,56 @@ t_spin_checks = [north, east, south, west]
 t_spin_bonus = [400, 800, 1200, 1600]
 t_spin_mini_bonus = [100, 200, 1200]
 
+I_matrix = [
+    [False, False, False, False],
+    [ True,  True,  True,  True],
+    [False, False, False, False],
+    [False, False, False, False]
+]
+
+O_matrix = [
+    [ True,  True, False],
+    [ True,  True, False],
+    [False, False, False],
+]
+
+J_matrix = [
+    [ True, False, False],
+    [ True,  True,  True],
+    [False, False, False]
+]
+
+L_matrix = [
+    [False, False,  True],
+    [ True,  True,  True],
+    [False, False, False]
+]
+
+S_matrix = [
+    [False,  True,  True],
+    [ True,  True, False],
+    [False, False, False]
+]
+
+Z_matrix = [
+    [True,   True, False],
+    [False,  True,  True],
+    [False, False, False]
+]
+
+T_matrix = [
+    [False,  True, False],
+    [True,   True,  True],
+    [False, False, False]
+]
+
+piece_matrix_list = [I_matrix, J_matrix, L_matrix, O_matrix, S_matrix, T_matrix, Z_matrix]
+
 class I():
     def __init__(self):
         self.x = spawn_x_4w
         self.y = spawn_y
-        self.shape = [
-            [False, False, False, False],
-            [ True,  True,  True,  True],
-            [False, False, False, False],
-            [False, False, False, False]
-        ]
+        self.shape = I_matrix
         self.rot = '0'
         self.rot_index = 0
 
@@ -61,11 +101,7 @@ class O():
     def __init__(self):
         self.x = spawn_x_4w
         self.y = spawn_y
-        self.shape = [
-            [ True,  True, False],
-            [ True,  True, False],
-            [False, False, False],
-        ]
+        self.shape = O_matrix
         self.rot = '0'
         self.rot_index = 0
 
@@ -78,11 +114,7 @@ class J():
     def __init__(self):
         self.x = spawn_x_3w
         self.y = spawn_y
-        self.shape = [
-            [ True, False, False],
-            [ True,  True,  True],
-            [False, False, False]
-        ]
+        self.shape = J_matrix
         self.rot = '0'
         self.rot_index = 0
 
@@ -95,11 +127,7 @@ class L():
     def __init__(self):
         self.x = spawn_x_3w
         self.y = spawn_y
-        self.shape = [
-            [False, False,  True],
-            [ True,  True,  True],
-            [False, False, False]
-        ]
+        self.shape = L_matrix
         self.rot = '0'
         self.rot_index = 0
 
@@ -112,11 +140,7 @@ class S():
     def __init__(self):
         self.x = spawn_x_3w
         self.y = spawn_y
-        self.shape = [
-            [False,  True,  True],
-            [ True,  True, False],
-            [False, False, False]
-        ]
+        self.shape = S_matrix
         self.rot = '0'
         self.rot_index = 0
 
@@ -129,11 +153,7 @@ class Z():
     def __init__(self):
         self.x = spawn_x_3w
         self.y = spawn_y
-        self.shape = [
-            [True,   True, False],
-            [False,  True,  True],
-            [False, False, False]
-        ]
+        self.shape = Z_matrix
         self.rot = '0'
         self.rot_index = 0
 
@@ -146,11 +166,7 @@ class T():
     def __init__(self):
         self.x = spawn_x_3w
         self.y = spawn_y
-        self.shape = [
-            [False,  True, False],
-            [True,   True,  True],
-            [False, False, False]
-        ]
+        self.shape = T_matrix
         self.rot = '0'
         self.rot_index = 0
 

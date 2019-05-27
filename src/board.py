@@ -9,6 +9,39 @@ upper_border = '-'
 ghost = '~'
 #piece_list = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
 
+cyan = (0, 159, 218)
+light_cyan = (127, 255, 255)
+yellow = (254, 203, 0)
+light_yellow = (255, 255, 127)
+blue = (0, 101, 189)
+light_blue = (100, 200, 255)
+orange = (255, 121, 0)
+light_orange = (255, 180, 142)
+green = (105, 190, 40)
+light_green = (127, 255, 127)
+red = (237, 41, 57)
+light_red = (255, 145, 145)
+purple = (149, 45, 152)
+light_purple = (215, 142, 255)
+white = (255, 255, 255)
+
+color_from_board_val = {
+    0: cyan,
+    1: blue,
+    2: orange,
+    3: yellow,
+    4: green,
+    5: purple,
+    6: red,
+    -1: light_cyan,
+    -2: light_blue,
+    -3: light_orange,
+    -4: light_yellow,
+    -5: light_green,
+    -6: light_purple,
+    -7: light_red
+}
+
 #for the board:
 #None is an empty cell
 #val >= 0 (max is 6 inclusive) <=> actual piece

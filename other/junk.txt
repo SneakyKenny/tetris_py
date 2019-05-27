@@ -1,8 +1,8 @@
 
 '''
-(width, height) = (320, 570)
+(width, height) = (320, 480)
 
-scale = 25
+scale = 20
 border_scale = 10
 
 background_colour = (255, 255, 255)

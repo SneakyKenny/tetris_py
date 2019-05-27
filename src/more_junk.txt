@@ -1,0 +1,119 @@
+
+
+left_key = keyboard.Key.left
+right_key = keyboard.Key.right
+hard_drop_key = keyboard.Key.space
+soft_drop_key = keyboard.Key.down
+CWR_key = keyboard.Key.up
+CCWR_key = 'z'
+rot_180_key = 'x'
+hold_key = 'c'
+
+quit_key = 'q'
+restart_key = keyboard.Key.f4
+
+def on_press(key):
+    global t, win
+    global left_held, right_held, CWR_held, CCWR_held, hard_drop_held, soft_drop_held, rot_180_held
+
+    k = None
+    try:
+        k = key.char
+    except AttributeError:
+        k = key
+
+    old_y = t.active_piece.y
+
+    if k == hold_key:
+        t.hold_piece()
+        return
+
+    if k == left_key and not left_held:
+        t.move_piece('L')
+        left_held = True
+    #elif k == left_key and left_held:
+    #    t.das_piece('L')
+                            #left_held and left_held_timer >= DAS_value
+    if k == right_key and not right_held:
+        t.move_piece('R')
+        right_held = True
+    #elif k == right_key and right_held:
+    #    t.das_piece('R')
+                            #right_held and right_held_timer >= DAS_value
+    if k == hard_drop_key and not hard_drop_held:
+        while t.move_active_piece():
+            t.cur_rot_is_tspin = False
+        t.spawn_next_piece()
+        hard_drop_held = True
+
+    if k == soft_drop_key and not soft_drop_held:
+        # for now we sonic drop, might wanna have a setting for that
+        while t.move_active_piece():
+            t.cur_rot_is_tspin = False
+        soft_drop_held = True
+
+    if k == CWR_key and not CWR_held:
+        t.rotate_piece('R')
+        CWR_held = True
+
+    if k == CCWR_key and not CCWR_held:
+        t.rotate_piece('L')
+        CCWR_held = True
+
+    if k == rot_180_key and not rot_180_held:
+        t.rotate_piece('180')
+        rot_180_held = True
+
+    #i'm not sure about this, we want to make the piece move after rotation if move key is held
+    if k == CWR_key or k == CCWR_key or k == rot_180_key and (left_held or right_held):
+        t.move_piece('L' if left_held else 'R')
+
+    if k == restart_key:
+        t = tetris.Tetris()
+        t.spawn_next_piece(isFirstPiece = True)
+
+    if t.active_piece.y != old_y:
+        elapsed = 0
+
+def on_release(key):
+    if key == keyboard.Key.esc:
+        return False
+
+    global t
+    global left_held, right_held, CWR_held, CCWR_held, hard_drop_held, soft_drop_held, rot_180_held
+    global left_held_timer, right_held_timer
+
+    k = None
+
+    try:
+        k = key.char
+    except AttributeError:
+        k = key
+
+    if k == left_key:
+        left_held = False
+        left_held_timer = 0
+
+    if k == right_key:
+        right_held = False
+        right_held_timer = 0
+
+    if k == hard_drop_key:
+        hard_drop_held = False
+
+    if k == soft_drop_key:
+        soft_drop_held = False
+
+    if k == CWR_key:
+        CWR_held = False
+
+    if k == CCWR_key:
+        CCWR_held = False
+
+    if k == rot_180_key:
+        rot_180_held = False
+
+listener = keyboard.Listener(
+    on_press=on_press,
+    on_release=on_release)
+listener.start()
