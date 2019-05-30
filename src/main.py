@@ -15,6 +15,8 @@ from pieces import *
 from board import *
 
 from read_config import *
+import my_networking
+from threading import Thread
 
 #DAS toolkit: 50 = 1 second
 #so 10 is 1/5 second = .2s = 200 nullpomino das
@@ -46,10 +48,11 @@ background_colour_board = (200, 200, 200)
 background_colour_around = (150, 150, 150)
 
 def init_tetris():
-    global t, start_time
+    global start_time
+    start_time = time.time()
     t = tetris.Tetris()
     t.spawn_next_piece(isFirstPiece = True)
-    start_time = time.time()
+    return t
 
 def draw_rect(i, j, color = (0, 0, 0)):
     global t, screen
@@ -137,7 +140,12 @@ def render():
 def main():
     global t, start_time
 
-    init_tetris()
+    t = init_tetris()
+
+    server_thread = Thread(target = my_networking.GameServer)
+    server_thread.start()
+
+    client = my_networking.GameClient(username = 'SneakyKenny', tetris = t)
 
     elapsed = 0
     global screen
@@ -157,11 +165,17 @@ def main():
 
     running = True
     while running:
+        if not client.game_client_loop_check():
+            running = False
+            pygame.quit()
+            t = None
+            return
+
         pygame.draw.rect(screen, background_colour_around, pygame.Rect(score_pos, (score_scale, score_scale)))
         p = t.points
         font_size = 32 - 3 * len(str(p))
         font = pygame.font.SysFont('verdana', font_size)
-        ptext = font.render(str(p), True, (255, 255, 255), background_colour_around)
+        ptext = font.render(str(int(p)), True, (255, 255, 255), background_colour_around)
         prect = ptext.get_rect()
         prect.center = (score_pos[0] + score_scale / 2, score_pos[1] + score_scale / 2)
         screen.blit(ptext, prect)
@@ -179,7 +193,8 @@ def main():
                 if not t.spawn_next_piece():
                     running = False
                     pygame.quit()
-                    break
+                    t = None
+                    return
 
             t.cur_rot_is_tspin = False
 
@@ -189,9 +204,13 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
+                t = None
             elif event.type == pygame.KEYDOWN:
                 if event.key == ord('q') or event.key == pygame.K_ESCAPE:
+                    running = False
                     pygame.quit()
+                    t = None
+                    return
                 if event.key == pygame.K_F4:
                     init_tetris()
                 if event.key == pygame.K_LEFT:
@@ -204,6 +223,9 @@ def main():
                     left_held = False
                     left_held_timer = 0
                     t.move_piece('R')
+                if event.key == pygame.K_r:
+                    t.chunks = [[1, 2]]
+                    t.lines_sent = 2
                 if event.key == pygame.K_z:
                     t.rotate_piece('L')
                 if event.key == pygame.K_UP:

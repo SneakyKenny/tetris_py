@@ -24,6 +24,7 @@ light_red = (255, 145, 145)
 purple = (149, 45, 152)
 light_purple = (215, 142, 255)
 white = (255, 255, 255)
+dark_grey = (50, 50, 50)
 
 color_from_board_val = {
     0: cyan,
@@ -33,6 +34,7 @@ color_from_board_val = {
     4: green,
     5: purple,
     6: red,
+    7: dark_grey,
     -1: light_cyan,
     -2: light_blue,
     -3: light_orange,

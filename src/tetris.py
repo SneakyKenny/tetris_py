@@ -6,8 +6,10 @@ import board
 import custom_tools
 import random
 import time
+
 #piece_list = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
 piece_list = ['J', 'S', 'Z', 'O', 'I', 'L', 'T']
+#piece_list = ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O']
 
 piece_to_int = {
     'I': 0,
@@ -24,10 +26,24 @@ mini_tspin_text = 'Mini T-Spin'
 tspin_text = 'T-Spin'
 line_cleared_text = ['', 'Single', 'Double', 'Triple', 'Tetris']
 combo_text = 'combo'
+pc_text = 'all clear !'
+
+pc_bonus_factor = 10
+pc_lines_sent = 10
+pc_lines_sent_pack_1 = 6
+pc_lines_sent_pack_2 = 4
+
 points_per_line = [0, 100, 300, 500, 800]
+lines_sent_per_line = [0, 0, 1, 2, 4]
 
 points_per_t_spin = [400, 800, 1200, 1600]
+lines_sent_per_t_spin = [0, 2, 4, 6]
+
 points_per_mini_t_spin = [100, 200, 1200, 3200]
+lines_sent_per_mini_t_spin = [0, 0, 0, 0]
+
+lines_sent_per_combo = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5]
+lines_sent_per_combo_above_12 = 5
 
 time_to_drop_per_level = [1.0, 1.0, 0.793, 0.618, 0.473, 0.355, 0.262, 0.190, 0.135, 0.094, 0.064, 0.043, 0.028, 0.018, 0.011, 0.007]
 
@@ -37,15 +53,15 @@ class Tetris:
     def __init__(self):
         self.board = board.Board()
         self.bucket = piece_list[:]
-        random.shuffle(self.bucket)
+        #random.shuffle(self.bucket)
         self.second_bucket = piece_list[:]
-        random.shuffle(self.second_bucket)
+        #random.shuffle(self.second_bucket)
         self.active_piece = None
         self.held_piece = None
 
         self.level_up_enable = False
 
-        self.level = 4
+        self.level = 0
         self.points = 0
 
         self.lines_cleared = 0
@@ -57,6 +73,12 @@ class Tetris:
         self.is_eligible_for_t_spin = False
 
         self.combo = -1
+
+        self.lines_sent = 0
+        self.chunks = []
+
+        self.pending_chunks = []
+        self.pending_lines = 0
 
     def get_checks(self):
         return pieces.t_spin_checks[self.active_piece.rot_index]
@@ -123,7 +145,6 @@ class Tetris:
         return c and d and (a or b)
 
     def clear_completed_lines(self):
-
         is_tspin = self.cur_rot_is_tspin and self.check_tspin()
         is_mini_tspin = self.cur_rot_is_tspin and self.check_mini_tspin()
 
@@ -135,19 +156,13 @@ class Tetris:
         completed_lines = []
         for i in range(self.board.height):
             full = True
+            empty = True
             j = 0
-            while full and j < self.board.width:
+            for j in range(self.board.width):
                 full &= self.board.get_state(i, j)
-                if full:
-                    j += 1
             if full:
                 num_completed_lines += 1
                 completed_lines.append(i)
-
-        if num_completed_lines > 0:
-            self.combo += 1
-        else:
-            self.combo = -1
 
         off_i = 0
         for comp in completed_lines:
@@ -159,7 +174,22 @@ class Tetris:
                 new_line.append(None)
             self.board.board.insert(0, new_line)
 
-        self.score(num_completed_lines, is_tspin, is_mini_tspin)
+        is_perfect_clear = True
+        for i in range(self.board.height):
+            for j in range(self.board.width):
+                is_perfect_clear &= not self.board.get_state(i, j)
+
+        if num_completed_lines > 0:
+            self.combo += 1
+        else:
+            self.combo = -1
+
+        g_sent = self.send_garbage(num_completed_lines, is_tspin, is_mini_tspin, is_perfect_clear)
+        #TODO: if we have not cleared any line, recieve the garbage
+        if num_completed_lines == 0:
+            self.recieve_garbage()
+
+        self.score(num_completed_lines, is_tspin, is_mini_tspin, is_perfect_clear)
 
         if self.level_up_enable:
             old_lc = self.lines_cleared % 10
@@ -171,24 +201,105 @@ class Tetris:
 
         return num_completed_lines
 
-    def print_line_clears(self, lines_cleared, is_tspin, is_mini_tspin):
+    def clear_sent_lines(self):
+        self.lines_sent = 0
+        self.chunks = []
+
+    def clear_pending_lines(self):
+        self.pending_lines = 0
+        self.pending_chunks = []
+
+    def send_garbage(self, lines_cleared, is_tspin, is_mini_tspin, is_perfect_clear):
+        lines_sent = 0
+        chunks = []
+
+        if self.combo >= 12:
+            lines_sent += lines_sent_per_combo_above_12
+            chunks.append(lines_sent_per_combo_above_12)
+        elif self.combo > 0 and lines_sent_per_combo[self.combo] > 0:
+            lines_sent += lines_sent_per_combo[self.combo]
+            chunks.append(lines_sent_per_combo[self.combo])
+        else:
+            #litteraly no combo going on, just ignore this part.
+            pass
+
+        if is_perfect_clear:
+            lines_sent += pc_lines_sent
+            chunks.append(pc_lines_sent_pack_1)
+            chunks.append(pc_lines_sent_pack_2)
+        if is_tspin and lines_sent_per_t_spin[lines_cleared] > 0:
+            if self.is_back_to_back_bonus:
+                lines_sent += lines_sent_per_t_spin[lines_cleared] + 1
+                chunks.append(lines_sent_per_t_spin[lines_cleared] + 1)
+            else:
+                lines_sent += lines_sent_per_t_spin[lines_cleared]
+                chunks.append(lines_sent_per_t_spin[lines_cleared])
+        elif is_mini_tspin and lines_sent_per_mini_t_spin[lines_cleared] > 0:
+            lines_sent += lines_sent_per_mini_t_spin[lines_cleared]
+            chunks.append(lines_sent_per_mini_t_spin[lines_cleared])
+        else:
+            if lines_sent_per_line[lines_cleared] > 0:
+                if lines_cleared == 4 and self.is_back_to_back_bonus:
+                    lines_sent += lines_sent_per_line[lines_cleared] + 1
+                    chunks.append(lines_sent_per_line[lines_cleared] + 1)
+                else:
+                    lines_sent += lines_sent_per_line[lines_cleared]
+                    chunks.append(lines_sent_per_line[lines_cleared])
+
+        # let's say pending = [6, 4] and chunks = [3]
+        # do then set pending to [6, 1] or to [3, 4] ?
+
+        # now if pending = [6, 4] and chunks = [5]
+        # then the options are then pending = [5] and [1, 4]
+
+        # last case is pending = [3] and chunks = [5]
+        # then pending will be [] and chunks = [2]
+
+        if lines_sent != 0:
+            self.chunks.append(chunks)
+            self.lines_sent += lines_sent
+
+        return chunks, lines_sent
+
+    def recieve_garbage(self):
+        for c in self.pending_chunks:
+            for n in c:
+                hole = random.randint(0, 9)
+                for i in range(n):
+                    # TODO: cancel out recieved lines
+                    line = []
+                    for j in range(self.board.width):
+                        if j != hole:
+                            line.append(7)
+                        else:
+                            line.append(None)
+                    self.board.board.insert(len(self.board.board), line)
+                    self.board.board.pop(0)
+
+        self.clear_pending_lines()
+
+    def print_line_clears(self, lines_cleared, is_tspin, is_mini_tspin, is_perfect_clear):
         if self.is_back_to_back_bonus and (lines_cleared == 4 or is_tspin or is_mini_tspin):
             print(b2b_text, end = ' ')
         if is_tspin:
-            print(tspin_text, line_cleared_text[lines_cleared], end = '')
+            print(tspin_text, line_cleared_text[lines_cleared], end = ' ')
         elif is_mini_tspin:
-            print(mini_tspin_text, line_cleared_text[lines_cleared], end = '')
+            print(mini_tspin_text, line_cleared_text[lines_cleared], end = ' ')
         else:
-            print(line_cleared_text[lines_cleared], end = '')
+            print(line_cleared_text[lines_cleared], end = ' ')
 
         if self.combo > 0:
-            print(f'\t\t{self.combo} {combo_text}', end = '             \r')
-        else:
-            print('\t\t\t', end = '\r')
+            print(f'{self.combo} {combo_text}', end = ' ')
 
-    def score(self, lines_cleared, is_tspin, is_mini_tspin):
+        if is_perfect_clear:
+            print(pc_text, end = ' ')
 
-        self.print_line_clears(lines_cleared, is_tspin, is_mini_tspin)
+        print(' ')
+
+    def score(self, lines_cleared, is_tspin, is_mini_tspin, is_perfect_clear):
+
+        #if lines_cleared > 0:
+        #    self.print_line_clears(lines_cleared, is_tspin, is_mini_tspin, is_perfect_clear)
 
         points_scored = 0
 
@@ -203,15 +314,19 @@ class Tetris:
             points_scored *= btb_bonus_factor
 
         # we could do this in one line but it's more explicit this way
-        if lines_cleared == 4 or is_tspin or is_mini_tspin:
-            self.is_back_to_back_bonus = True
-        else:
-            self.is_back_to_back_bonus = False
+        if lines_cleared != 0:
+            if lines_cleared == 4 or is_tspin or is_mini_tspin:
+                self.is_back_to_back_bonus = True
+            else:
+                self.is_back_to_back_bonus = False
 
         if self.combo >= 0:
             points_scored += self.combo * 50
 
         points_scored *= self.level
+
+        if is_perfect_clear:
+            points_scored *= pc_bonus_factor
 
         self.points += points_scored
 
@@ -219,22 +334,22 @@ class Tetris:
 
         self.has_held = False
 
-        if not isFirstPiece:
-            #TODO: REFACTOR THIS !!!
+        if (not isFirstPiece) and (not isFromHold):
             self.clear_completed_lines()
 
         self.is_eligible_for_t_spin = False
 
         p = None
 
-        if isFromHold == False:
+        if isFromHold:
+            p = self.held_piece
+        else:
             if len(self.bucket) == 0:
                 self.bucket = self.second_bucket
                 self.second_bucket = piece_list[:]
                 random.shuffle(self.second_bucket)
             p = self.bucket.pop()
-        else:
-            p = self.held_piece
+
         new_piece = None
 
         if p == 'I':
@@ -595,7 +710,7 @@ class Tetris:
 
         if self.held_piece == None:
             self.held_piece = self.active_piece.to_string()
-            self.spawn_next_piece()
+            self.spawn_next_piece(isFirstPiece = True)
         else:
             old_active = self.active_piece.to_string()
             self.spawn_next_piece(isFromHold = True)
