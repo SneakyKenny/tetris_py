@@ -9,7 +9,7 @@ import tetris
 
 HEADER_LENGTH = 10
 
-IP = "127.0.0.1"
+IP = "localhost"
 PORT = 1234
 
 class GameServer:
@@ -71,9 +71,9 @@ class GameServer:
 
                         del self.clients[notified_socket]
 
-                        if len(self.clients) == 0:
-                            self.server_socket.close()
-                            sys.exit()
+                        #if len(self.clients) == 0:
+                        #    self.server_socket.close()
+                        #    sys.exit()
 
                         continue
 

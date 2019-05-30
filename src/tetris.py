@@ -53,9 +53,9 @@ class Tetris:
     def __init__(self):
         self.board = board.Board()
         self.bucket = piece_list[:]
-        #random.shuffle(self.bucket)
+        random.shuffle(self.bucket)
         self.second_bucket = piece_list[:]
-        #random.shuffle(self.second_bucket)
+        random.shuffle(self.second_bucket)
         self.active_piece = None
         self.held_piece = None
 

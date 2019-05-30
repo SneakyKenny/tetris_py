@@ -50,6 +50,7 @@ background_colour_around = (150, 150, 150)
 def init_tetris():
     global start_time
     start_time = time.time()
+    global t
     t = tetris.Tetris()
     t.spawn_next_piece(isFirstPiece = True)
     return t
@@ -142,10 +143,10 @@ def main():
 
     t = init_tetris()
 
-    server_thread = Thread(target = my_networking.GameServer)
-    server_thread.start()
+    #server_thread = Thread(target = my_networking.GameServer)
+    #server_thread.start()
 
-    client = my_networking.GameClient(username = 'SneakyKenny', tetris = t)
+    client = my_networking.GameClient(username = 'Actually Kenny', tetris = t)
 
     elapsed = 0
     global screen
@@ -203,6 +204,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
+                return
             elif event.type == pygame.KEYDOWN:
                 if event.key == ord('q') or event.key == pygame.K_ESCAPE:
                     running = False
