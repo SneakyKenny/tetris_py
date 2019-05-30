@@ -1,6 +1,8 @@
 # tetris_py
 A random tetris made with python 3.7.1
 
+# BIG THANKS TO @K91 !
+
 run by executing main.py
 
 make clean to remove compiled python files
@@ -12,7 +14,6 @@ modules imported ("requirements"):
 
 #TODO:
 ### - lock delay
-- gargabe
 - sounds
 - menu:
     - read/write controls and das/arr
