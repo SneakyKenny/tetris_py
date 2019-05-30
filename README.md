@@ -9,17 +9,35 @@ make clean to remove compiled python files
 
 modules imported ("requirements"):
 - pygame
-- time
-- random
 
 #TODO:
-- more scoring methods (modern tetris like)
-- lock delay
+### - lock delay
 - gargabe
-- game modes (rnjesus: 2nd player controls pieces to come for the tetris player, while he tries to complete missions)
-- some sort of IA to battle ?
-- bonuses ? (bananatris: spin the board/matrix)
+- sounds
+- menu:
+    - read/write controls and das/arr
+    - choose game mode
+    - multiplayer: choose if we wanna be the server + what ip to use
+    - return to menu instead of killing program
+- game modes: save game rules in config files ?
+    - practice mode
+    - sprint:
+        - choose lines (20/40/100/1000/maxout)
+    - marathon:
+        - 150 lines (scored + timed)
+        - infinite
+    - ultra
+    - grademania?
+    - demon mode lul
+    - RNJesus
+    - ai battle
+    - party mode (items and bonuses)
+    - bombs mode
+- skins
+- achievements
 
-finaly goal:
+## REFACTOR YOUR SHIT DUDE
+
+final goals:
 - jstris/nullpomino like (gameplay wise)
 - multiplayer
