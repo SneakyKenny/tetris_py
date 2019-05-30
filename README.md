@@ -14,6 +14,9 @@ modules imported ("requirements"):
 
 #TODO:
 ### - lock delay
+- garbage canceling
+- incoming garbage indicator
+- different garbage distribution
 - sounds
 - menu:
     - read/write controls and das/arr
@@ -34,6 +37,7 @@ modules imported ("requirements"):
     - ai battle
     - party mode (items and bonuses)
     - bombs mode
+- preview of opponents' games
 - skins
 - achievements
 
