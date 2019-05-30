@@ -193,7 +193,6 @@ def main():
                 if not t.spawn_next_piece():
                     running = False
                     pygame.quit()
-                    t = None
                     return
 
             t.cur_rot_is_tspin = False
@@ -204,12 +203,10 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
-                t = None
             elif event.type == pygame.KEYDOWN:
                 if event.key == ord('q') or event.key == pygame.K_ESCAPE:
                     running = False
                     pygame.quit()
-                    t = None
                     return
                 if event.key == pygame.K_F4:
                     init_tetris()
@@ -223,9 +220,6 @@ def main():
                     left_held = False
                     left_held_timer = 0
                     t.move_piece('R')
-                if event.key == pygame.K_r:
-                    t.chunks = [[1, 2]]
-                    t.lines_sent = 2
                 if event.key == pygame.K_z:
                     t.rotate_piece('L')
                 if event.key == pygame.K_UP:
