@@ -22,7 +22,7 @@ modules imported ("requirements"):
     - read/write controls and das/arr
     - choose game mode
     - multiplayer: choose if we wanna be the server + what ip to use
-    - return to menu instead of killing program
+    - return to menu/respawn/spectate instead of killing program
 - game modes: save game rules in config files ?
     - practice mode
     - sprint:
@@ -31,15 +31,19 @@ modules imported ("requirements"):
         - 150 lines (scored + timed)
         - infinite
     - ultra
-    - grademania?
+    - grademania ? secret grade ?
     - demon mode lul
     - RNJesus
     - ai battle
     - party mode (items and bonuses)
     - bombs mode
+    - tetris effect (zone for ultimatris)
+    - tetris HD (huge board)
 - preview of opponents' games
-- skins
+- text chat
+- skins (minos and background)
 - achievements
+- bottom text undertale music
 
 ## REFACTOR YOUR SHIT DUDE
 
