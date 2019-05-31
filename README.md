@@ -37,6 +37,7 @@ modules imported ("requirements"):
     - ai battle
     - party mode (items and bonuses)
     - bombs mode
+    - big mode
     - tetris effect (zone for ultimatris)
     - tetris HD (huge board)
     - metrognome
