@@ -39,6 +39,7 @@ modules imported ("requirements"):
     - bombs mode
     - tetris effect (zone for ultimatris)
     - tetris HD (huge board)
+    - metrognome
 - map
 - map editor
 - preview of opponents' games
