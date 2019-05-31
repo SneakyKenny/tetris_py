@@ -39,6 +39,8 @@ modules imported ("requirements"):
     - bombs mode
     - tetris effect (zone for ultimatris)
     - tetris HD (huge board)
+- map
+- map editor
 - preview of opponents' games
 - text chat
 - skins (minos and background)
