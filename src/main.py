@@ -17,6 +17,9 @@ from board import *
 from read_config import *
 import my_networking
 from threading import Thread
+import menu_creator
+import game_manager
+import read_config
 
 #DAS toolkit: 50 = 1 second
 #so 10 is 1/5 second = .2s = 200 nullpomino das
@@ -26,7 +29,7 @@ nullpomino_arr = 0
 DAS_value = 25 / nullpomino_das
 ARR_value = nullpomino_arr / 25
 
-(width, height) = (460, 480)
+(width, height) = (460, 500)
 
 hold_pos = (10, 10)
 hold_size = (80, 80)
@@ -139,16 +142,6 @@ def render():
     pygame.display.flip()
 
 def main():
-    global t, start_time
-
-    t = init_tetris()
-
-    #server_thread = Thread(target = my_networking.GameServer)
-    #server_thread.start()
-
-    client = my_networking.GameClient(username = 'Actually Kenny', tetris = t)
-
-    elapsed = 0
     global screen
     pygame.init()
     screen = pygame.display.set_mode((width, height))
@@ -156,6 +149,25 @@ def main():
     screen.fill(background_colour_around)
     pygame.display.flip()
     pygame.key.set_repeat()
+
+    menu_creator.create_menu(screen)
+
+    config = read_config.read_config(file_path = 'settings.ini', section = 'SectionKeyBinds')
+    for k, b in config.items():
+        config[k] = int(b)
+
+    screen.fill(background_colour_around) # reset screen after the menu is gone
+
+    global t, start_time
+
+    t = init_tetris()
+
+    #server_thread = Thread(target = my_networking.GameServer)
+    #server_thread.start()
+
+    client = my_networking.GameClient(username = 'SneakyKenny', tetris = t)
+
+    elapsed = 0
 
     left_held = False
     right_held = False
@@ -166,11 +178,10 @@ def main():
 
     running = True
     while running:
-        if not client.game_client_loop_check():
+        if client.is_connected and not client.game_client_loop_check():
             running = False
             pygame.quit()
-            t = None
-            return
+            quit()
 
         pygame.draw.rect(screen, background_colour_around, pygame.Rect(score_pos, (score_scale, score_scale)))
         p = t.points
@@ -194,7 +205,7 @@ def main():
                 if not t.spawn_next_piece():
                     running = False
                     pygame.quit()
-                    return
+                    quit()
 
             t.cur_rot_is_tspin = False
 
@@ -204,36 +215,39 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
-                return
+                quit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == ord('q') or event.key == pygame.K_ESCAPE:
                     running = False
                     pygame.quit()
-                    return
-                if event.key == pygame.K_F4:
-                    init_tetris()
-                if event.key == pygame.K_LEFT:
+                    quit()
+                #if event.key == pygame.K_F4:
+                #    init_tetris()
+                if event.key == config['move_left']:#pygame.K_LEFT:
                     left_held = True
                     right_held = False
                     right_held_timer = 0
                     t.move_piece('L')
-                if event.key == pygame.K_RIGHT:
+                if event.key == config['move_right']:#pygame.K_RIGHT:
                     right_held = True
                     left_held = False
                     left_held_timer = 0
                     t.move_piece('R')
-                if event.key == pygame.K_z:
+                if event.key == config['rotate_left']:#pygame.K_z:
                     t.rotate_piece('L')
-                if event.key == pygame.K_UP:
+                if event.key == config['rotate_right']:#pygame.K_UP:
                     t.rotate_piece('R')
-                if event.key == pygame.K_x:
+                if event.key == config['rotate_180']:#pygame.K_x:
                     t.rotate_piece('180')
-                if event.key == pygame.K_c:
+                if event.key == config['hold_piece']:#pygame.K_c:
                     t.hold_piece()
-                if event.key == pygame.K_SPACE:
+                if event.key == config['hard_drop']:#pygame.K_SPACE:
                     t.hard_drop_piece()
-                if event.key == pygame.K_DOWN:
+                #TODO: soft_drop + sonic_drop
+                if event.key == config['soft_drop']:#pygame.K_DOWN:
                     t.soft_drop_piece()
+                if event.key == config['sonic_drop']:#pygame.K_DOWN:
+                    t.sonic_drop_piece()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     left_held = False

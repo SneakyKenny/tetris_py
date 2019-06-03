@@ -56,7 +56,7 @@ class Board:
     def __init__(self):
         self.width = 10
         self.height = 20
-        self.hmargin = 3
+        self.hmargin = 10
 
         board = []
         for _ in range(self.height + self.hmargin):

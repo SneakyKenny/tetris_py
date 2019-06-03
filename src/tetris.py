@@ -61,7 +61,7 @@ class Tetris:
 
         self.level_up_enable = False
 
-        self.level = 0
+        self.level = 1
         self.points = 0
 
         self.lines_cleared = 0
@@ -720,12 +720,18 @@ class Tetris:
 
         self.has_held = True
 
-    def soft_drop_piece(self):
+    def sonic_drop_piece(self):
         moved = False
         while self.move_active_piece():
             self.points += 1
             moved = True
         return moved
+
+    def soft_drop_piece(self):
+        if self.move_active_piece():
+            self.points += 1
+            return True
+        return False
 
     def hard_drop_piece(self):
         moved = False

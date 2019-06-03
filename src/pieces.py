@@ -3,7 +3,26 @@
 spawn_y = 19
 spawn_x_3w = 3
 spawn_x_4w = 3
+'''
+#that is used for big mode ? idk never worked
+all0_R = [( 0, 0), (-2, 0), (-2,+2), ( 0,-4), (-2,-4)]
+allR_2 = [( 0, 0), (+2, 0), (+2,-2), ( 0,+4), (+2,+4)]
+allR_0 = [( 0, 0), (+2, 0), (+2,-2), ( 0,+4), (+2,+4)]
+all2_R = [( 0, 0), (-2, 0), (-2,+2), ( 0,-4), (-2,-4)]
+all2_L = [( 0, 0), (+2, 0), (+2,+2), ( 0,-4), (+2,-4)]
+allL_2 = [( 0, 0), (-2, 0), (-2,-2), ( 0,+4), (-2,+4)]
+allL_0 = [( 0, 0), (-2, 0), (-2,-2), ( 0,+4), (-2,+4)]
+all0_L = [( 0, 0), (+2, 0), (+2,+2), ( 0,-4), (+2,-4)]
 
+iwk0_R = [( 0, 0), (-4, 0), (+2, 0), (-4,-2), (+2,+4)]
+iwkR_0 = [( 0, 0), (+4, 0), (-2, 0), (+4,+2), (-2,-4)]
+iwkR_2 = [( 0, 0), (-2, 0), (+4, 0), (-2,+4), (+4,-2)]
+iwk2_R = [( 0, 0), (+2, 0), (-4, 0), (+2,-4), (-4,+2)]
+iwk2_L = [( 0, 0), (+4, 0), (-2, 0), (+4,+2), (-2,-4)]
+iwkL_2 = [( 0, 0), (-4, 0), (+2, 0), (-4,-2), (+2,+4)]
+iwkL_0 = [( 0, 0), (+2, 0), (-4, 0), (+2,-4), (-4,+2)]
+iwk0_L = [( 0, 0), (-2, 0), (+4, 0), (-2,+4), (+4,-2)]
+'''
 all0_R = [( 0, 0), (-1, 0), (-1,+1), ( 0,-2), (-1,-2)]
 allR_2 = [( 0, 0), (+1, 0), (+1,-1), ( 0,+2), (+1,+2)]
 allR_0 = [( 0, 0), (+1, 0), (+1,-1), ( 0,+2), (+1,+2)]
@@ -38,7 +57,73 @@ t_spin_checks = [north, east, south, west]
 
 t_spin_bonus = [400, 800, 1200, 1600]
 t_spin_mini_bonus = [100, 200, 1200]
+'''
+#big mode again
+I_matrix = [
+    [False, False, False, False, False, False, False, False],
+    [False, False, False, False, False, False, False, False],
+    [ True,  True,  True,  True,  True,  True,  True,  True],
+    [ True,  True,  True,  True,  True,  True,  True,  True],
+    [False, False, False, False, False, False, False, False],
+    [False, False, False, False, False, False, False, False],
+    [False, False, False, False, False, False, False, False],
+    [False, False, False, False, False, False, False, False]
+]
 
+O_matrix = [
+    [ True,  True,  True,  True, False, False],
+    [ True,  True,  True,  True, False, False],
+    [ True,  True,  True,  True, False, False],
+    [ True,  True,  True,  True, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False]
+]
+
+J_matrix = [
+    [ True,  True, False, False, False, False],
+    [ True,  True, False, False, False, False],
+    [ True,  True,  True,  True,  True,  True],
+    [ True,  True,  True,  True,  True,  True],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False]
+]
+
+L_matrix = [
+    [False, False, False, False,  True,  True],
+    [False, False, False, False,  True,  True],
+    [ True,  True,  True,  True,  True,  True],
+    [ True,  True,  True,  True,  True,  True],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False]
+]
+
+S_matrix = [
+    [False, False, True,  True,   True,  True],
+    [False, False, True,  True,   True,  True],
+    [ True,  True, True,  True,  False, False],
+    [ True,  True, True,  True,  False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False]
+]
+
+Z_matrix = [
+    [True,   True,  True,  True, False, False],
+    [True,   True,  True,  True, False, False],
+    [False, False,  True,  True,  True,  True],
+    [False, False,  True,  True,  True,  True],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False]
+]
+
+T_matrix = [
+    [False, False,  True,  True, False, False],
+    [False, False,  True,  True, False, False],
+    [True,   True,  True,  True,  True,  True],
+    [True,   True,  True,  True,  True,  True],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False]
+]
+'''
 I_matrix = [
     [False, False, False, False],
     [ True,  True,  True,  True],

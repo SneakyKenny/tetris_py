@@ -9,7 +9,8 @@ import tetris
 
 HEADER_LENGTH = 10
 
-IP = "localhost"
+IP = "25.9.28.33"
+#IP = "25.105.26.125"
 PORT = 1234
 
 class GameServer:
@@ -103,14 +104,20 @@ class GameClient:
         self.username = username
         self.client_socket = None
         self.tetris = tetris
+        self.is_connected = False
         self.init_game_client()
-        print('client created and connected')
-        self.send_on_connect_message()
+        if self.is_connected:
+            print('client created and connected')
+            self.send_on_connect_message()
 
     def init_game_client(self):
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket.connect((IP, PORT))
-        self.client_socket.setblocking(False) # we might want to change that later ? #FIXME ?
+        try:
+            self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client_socket.connect((IP, PORT))
+            self.client_socket.setblocking(False) # we might want to change that later ? #FIXME ?
+            self.is_connected = True
+        except:
+            self.is_connected = False
 
     def send_on_connect_message(self):
         enc_username = self.username.encode('utf-8')
