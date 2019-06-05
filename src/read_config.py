@@ -8,11 +8,11 @@ def read_config(file_path, section):
     c = configparser.ConfigParser()
 
     if c.read(file_path) == []:
-        print('invalid file given: invalid file name or file is empty')
+        #print('invalid file given: invalid file name or file is empty')
         return None
 
     if not section in c.sections():
-        print('given section not found in config file')
+        #print('given section not found in config file')
         return None
 
     dict = {}
@@ -34,24 +34,24 @@ def write_config(file_path, section, option, value):
     c = configparser.ConfigParser()
 
     if c.read(file_path) == []:
-        print('invalid file given: invalid file name or file is empty')
+        #print('invalid file given: invalid file name or file is empty')
         return None
 
     if not section in c.sections():
-        print('given section not found in config file')
+        #print('given section not found in config file')
         return None
 
     cfgfile = None
     try:
         cfgfile = open(file_path,'w')
     except:
-        print('error opening file', file_path)
+        #print('error opening file', file_path)
         return False
 
     try:
         c.set(section, option, value)
     except:
-        print('exception caught while setting option', option)
+        #print('exception caught while setting option', option)
         return False
 
     c.write(cfgfile)

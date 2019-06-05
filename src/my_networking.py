@@ -3,7 +3,6 @@ import socket
 import select
 import errno
 import json
-from os import sys
 
 import tetris
 
@@ -14,21 +13,29 @@ IP = "25.9.28.33"
 PORT = 1234
 
 class GameServer:
-    def __init__(self, is_run_on_create = True):
+    def __init__(self, IP = None, PORT = None, is_init_on_create = True, is_run_on_create = True):
         self.server_socket = None
         self.sockets_list = []
         self.clients = {}
-        self.init_game_server()
+        self.IP = IP
+        self.PORT = PORT
+        if is_init_on_create:
+            self.init_game_server()
         if is_run_on_create:
             self.game_server_loop()
 
     def init_game_server(self):
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server_socket.bind((IP, PORT))
-        self.server_socket.listen()
-        self.sockets_list = [self.server_socket]
-        print(f'Listening for connections on {IP}:{PORT}...')
+        try:
+            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.server_socket.bind((self.IP, self.PORT))
+            self.server_socket.listen()
+            self.sockets_list = [self.server_socket]
+            print(f'Listening for connections on {self.IP}:{self.PORT}...')
+            return True
+        except:
+            print('invalid ip or port, server failed to create')
+            return False
 
     def receive_message(self, client_socket):
         try:

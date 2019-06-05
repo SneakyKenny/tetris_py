@@ -1,5 +1,7 @@
 import pygame
 import read_config
+import my_networking
+from threading import Thread
 
 margin_all = 30
 
@@ -43,12 +45,19 @@ def name_from_key(key):
     return chr(key) # TODO: change that
 
 def play_solo_option():
-    return False
+    return MenuOptions.IS_PLAYING_SOLO
 
 def play_multi_option():
     MenuOptions.options = MenuOptions.multi_options
     MenuOptions.option_texts = MenuOptions.multi_option_texts
     return True
+
+def change_nickname_option():
+    username = input('Username:')
+    if username and len(username) > 0 and len(username) < 32:
+        return MenuOptions.IS_USERNAME_CHANGE + ';' + username
+    print('Please input a username with length between 1 and 31.')
+    return MenuOptions.NOT_IS_USERNAME_CHANGE
 
 def change_control_option():
     MenuOptions.options = MenuOptions.control_options
@@ -69,10 +78,12 @@ def back_to_main_option():
     return True
 
 def host_game_option():
-    print('host_game_option')
+    server_thread = Thread(target = my_networking.GameServer, args = ('25.9.28.33', 1234, True, True))
+    server_thread.start()
+    return server_thread
 
 def join_game_option():
-    print('join_game_option')
+    return MenuOptions.IS_JOINING_TEXT
 
 def move_left_option(opt):
     opt.set(True, 'move_left')
@@ -129,6 +140,12 @@ class MenuOptions:
         self.control_to_change = control
         self.timer = self.base_timer
 
+    IS_JOINING_TEXT = 'joining'
+    IS_PLAYING_SOLO = 'solo' #TODO: choose game_mode instead of directly getting into the game
+
+    IS_USERNAME_CHANGE = 'username_change'
+    NOT_IS_USERNAME_CHANGE = 'no_change'
+
     BACK_TO_MAIN = back_to_main_option
     BACK_TO_MAIN_TEXT = 'Back to main menu'
 
@@ -146,6 +163,9 @@ class MenuOptions:
 
     multi_options = [HOST_GAME, JOIN_GAME, BACK_TO_MAIN]
     multi_option_texts = [HOST_GAME_TEXT, JOIN_GAME_TEXT, BACK_TO_MAIN_TEXT]
+
+    CHANGE_NICKNAME = change_nickname_option
+    CHANGE_NICKNAME_TEXT = 'Change Name'
 
     CHANGE_CONTROLS = change_control_option
     CHANGE_CONTROLS_TEXT = 'Controls'
@@ -194,8 +214,8 @@ class MenuOptions:
     QUIT_APP = quit_app_option
     QUIT_APP_TEXT = 'Quit'
 
-    base_options = [PLAY_SOLO, PLAY_MULTI, None, CHANGE_CONTROLS, VISUAL_SETTINGS, QUIT_APP]
-    base_option_texts = [PLAY_SOLO_TEXT, PLAY_MULTI_TEXT, 'Big Mode', CHANGE_CONTROLS_TEXT, VISUAL_SETTINGS_TEXT, QUIT_APP_TEXT]
+    base_options = [PLAY_SOLO, PLAY_MULTI, CHANGE_NICKNAME, CHANGE_CONTROLS, VISUAL_SETTINGS, QUIT_APP]
+    base_option_texts = [PLAY_SOLO_TEXT, PLAY_MULTI_TEXT, CHANGE_NICKNAME_TEXT, CHANGE_CONTROLS_TEXT, VISUAL_SETTINGS_TEXT, QUIT_APP_TEXT]
 
     options = base_options
     option_texts = base_option_texts
@@ -257,6 +277,7 @@ def display_menu(screen, index, bindings, img, is_in_main_menu = True):
     pygame.display.flip()
 
 def create_menu(screen):
+    #this returns the server created, if created, else None
     #TODO: start by reading from option file to set the keys
     #      then read inputs depending on these keys
     #      rather than the hardcoded ones
@@ -315,8 +336,34 @@ def create_menu(screen):
                                 #TODO: DAS/ARR from file
                                 done = not MenuOptions.options[index](opt)
                             else:
-                                done = not MenuOptions.options[index]()
-                                index = 0
+                                if MenuOptions.options == MenuOptions.multi_options:
+                                    if index == 0:
+                                        server_thread = MenuOptions.options[index]()
+                                        if server_thread:
+                                            return server_thread
+                                    elif index == 1:
+                                        joining = MenuOptions.options[index]()
+                                        if joining == MenuOptions.IS_JOINING_TEXT:
+                                            return joining
+                                else:
+                                    if MenuOptions.options == MenuOptions.base_options:
+                                        if index == 0:
+                                            solo = MenuOptions.options[index]()
+                                            if solo == MenuOptions.IS_PLAYING_SOLO:
+                                                return solo
+                                        elif index == 2:
+                                            ret_username = MenuOptions.options[index]().split(';')
+                                            if ret_username[0] == MenuOptions.IS_USERNAME_CHANGE:
+                                                has_wrote = read_config.write_config(file_path = 'settings.ini', section = 'SectionUserInfos', option = 'username', value = ret_username[1])
+                                            index = 0
+                                        else:
+                                            done = not MenuOptions.options[index]()
+                                            index = 0
+                                    else:
+                                        done = not MenuOptions.options[index]()
+                                        index = 0
 
                 if not done and not opt.is_waiting_for_input:
                     display_menu(screen, index, config, img, MenuOptions.options == MenuOptions.base_options)
+
+    return None

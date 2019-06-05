@@ -3,20 +3,22 @@
 #http://harddrop.com/wiki/Category:Game_Mechanics
 
 #from __future__ import print_function
-
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 
 import tetris
 import custom_tools
 
 import time
+import random
 
 from pieces import *
 from board import *
 
 from read_config import *
 import my_networking
-from threading import Thread
+#from threading import Thread
 import menu_creator
 import game_manager
 import read_config
@@ -141,7 +143,29 @@ def render():
 
     pygame.display.flip()
 
+def quit_program():
+    pygame.quit()
+    quit()
+
 def main():
+
+    username_list = ['Bob', 'John', 'Noob', 'Master', '6969']
+    username = None#username_list[random.randint(0, len(username_list))]
+
+    try:
+        username = read_config.read_config('settings.ini', 'SectionUserInfos')['username']
+    except:
+        username = input('Username:')
+        if not (username and len(username) > 0 and len(username) < 32):
+            username = username_list[random.randint(0, len(username_list))]
+            print('No username given, setting it to', username)
+
+        has_wrote = read_config.write_config(file_path = 'settings.ini', section = 'SectionUserInfos', option = 'username', value = username)
+        if has_wrote:
+            print('Username saved!')
+        else:
+            print('Failed to save your username, you\'ll have to input it again.')
+
     global screen
     pygame.init()
     screen = pygame.display.set_mode((width, height))
@@ -150,22 +174,13 @@ def main():
     pygame.display.flip()
     pygame.key.set_repeat()
 
-    menu_creator.create_menu(screen)
-
-    config = read_config.read_config(file_path = 'settings.ini', section = 'SectionKeyBinds')
-    for k, b in config.items():
-        config[k] = int(b)
-
-    screen.fill(background_colour_around) # reset screen after the menu is gone
-
     global t, start_time
 
     t = init_tetris()
 
-    #server_thread = Thread(target = my_networking.GameServer)
-    #server_thread.start()
-
-    client = my_networking.GameClient(username = 'SneakyKenny', tetris = t)
+    config = read_config.read_config(file_path = 'settings.ini', section = 'SectionKeyBinds')
+    for k, b in config.items():
+        config[k] = int(b)
 
     elapsed = 0
 
@@ -176,12 +191,26 @@ def main():
 
     total_time = 0
 
+    server_thread = None
+    client = None
+
+    menu_ret = menu_creator.create_menu(screen)
+    screen.fill(background_colour_around) # reset screen after the menu is gone
+
+    username = read_config.read_config('settings.ini', 'SectionUserInfos')['username']
+
+    if menu_ret == menu_creator.MenuOptions.IS_JOINING_TEXT:
+        client = my_networking.GameClient(username = username, tetris = t)
+    elif menu_ret == menu_creator.MenuOptions.IS_PLAYING_SOLO:
+        pass
+    else:
+        server_thread = menu_ret
+        client = my_networking.GameClient(username = username, tetris = t)
+
     running = True
     while running:
-        if client.is_connected and not client.game_client_loop_check():
-            running = False
-            pygame.quit()
-            quit()
+        if client and client.is_connected and not client.game_client_loop_check():
+            quit_program()
 
         pygame.draw.rect(screen, background_colour_around, pygame.Rect(score_pos, (score_scale, score_scale)))
         p = t.points
@@ -202,10 +231,9 @@ def main():
         if elapsed > tetris.time_to_drop_per_level[t.level]:
             elapsed = 0
             if not t.move_active_piece():
+                #here
                 if not t.spawn_next_piece():
-                    running = False
-                    pygame.quit()
-                    quit()
+                    quit_program()
 
             t.cur_rot_is_tspin = False
 
@@ -213,14 +241,12 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-                pygame.quit()
-                quit()
+                quit_program()
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == ord('q') or event.key == pygame.K_ESCAPE:
-                    running = False
-                    pygame.quit()
-                    quit()
+                    quit_program()
+
                 #if event.key == pygame.K_F4:
                 #    init_tetris()
                 if event.key == config['move_left']:#pygame.K_LEFT:
