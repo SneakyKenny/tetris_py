@@ -22,7 +22,7 @@ import my_networking
 import menu_creator
 import game_manager
 import read_config
-
+#TODO/FIXME: 180 spins check tspins
 #DAS toolkit: 50 = 1 second
 #so 10 is 1/5 second = .2s = 200 nullpomino das
 #therefore actual das = 1000/nullpomino_das
@@ -247,8 +247,9 @@ def main():
                 if event.key == ord('q') or event.key == pygame.K_ESCAPE:
                     quit_program()
 
-                #if event.key == pygame.K_F4:
-                #    init_tetris()
+                if not client or (client and not client.is_connected):
+                    if event.key == pygame.K_F4:
+                        init_tetris()
                 if event.key == config['move_left']:#pygame.K_LEFT:
                     left_held = True
                     right_held = False
@@ -274,6 +275,9 @@ def main():
                     t.soft_drop_piece()
                 if event.key == config['sonic_drop']:#pygame.K_DOWN:
                     t.sonic_drop_piece()
+                if event.key == ord('1'):
+                    t.set_active_visibility(None)
+                    t.active_piece = I()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     left_held = False

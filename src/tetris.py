@@ -549,32 +549,36 @@ class Tetris:
 
         tests = None
 
+        num_tests = -1
+
         if self.active_piece.to_string() == 'I':
+            num_tests = pieces.num_I_180_kicks
             if rot == '0':
-                tests = pieces.iwk0_R
+                tests = pieces.iwk0_2
             elif rot == 'L':
-                tests = pieces.iwkL_0
+                tests = pieces.iwkL_R
             elif rot == '2':
-                tests = pieces.iwk2_L
+                tests = pieces.iwk2_0
             elif rot == 'R':
-                tests = pieces.iwkR_2
+                tests = pieces.iwkR_L
             else:
-                print('unknown rotation for I piece to the right.')
+                print('unknown rotation for I piece to 180.')
                 return False
         else:
+            num_tests = pieces.num_180_kicks
             if rot == '0':
-                tests = pieces.all0_R
+                tests = pieces.all0_2
             elif rot == 'L':
-                tests = pieces.allL_0
+                tests = pieces.allL_R
             elif rot == '2':
-                tests = pieces.all2_L
+                tests = pieces.all2_0
             elif rot == 'R':
-                tests = pieces.allR_2
+                tests = pieces.allR_L
             else:
-                print('unknown rotation for common piece to the right.')
+                print('unknown rotation for common piece to 180.')
                 return False
 
-        for k in range(5):
+        for k in range(num_tests):
             if self.test_pos(rot_mat_180, tests, k):
                 self.active_piece.shape = rot_mat_180
                 self.active_piece.x += tests[k][0]
