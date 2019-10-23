@@ -6,7 +6,6 @@ import board
 import custom_tools
 import random
 import time
-
 #piece_list = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
 piece_list = ['J', 'S', 'Z', 'O', 'I', 'L', 'T']
 #piece_list = ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O']
@@ -58,8 +57,14 @@ class Tetris:
         random.shuffle(self.second_bucket)
         self.active_piece = None
         self.held_piece = None
-
+        self.has_moved = True
         self.level_up_enable = False
+
+        self.time_to_check_drop = 0
+        self.locktimer = 0
+        self.lockcheck = 0.5
+        self.times_lock_reset = 0
+        self.lowest_y = 22
 
         self.level = 1
         self.points = 0
@@ -414,7 +419,6 @@ class Tetris:
         self.active_piece.y -= 1
 
         self.set_visible()
-
         return True
 
     def test_pos(self, mat, tests, k):
@@ -450,7 +454,7 @@ class Tetris:
             elif rot == 'R':
                 tests = pieces.iwkR_0
             else:
-                print('unknown rotation for I piece.')
+                print('unknown rotation for I piece to the left.')
                 return False
         else:
             if rot == '0':
@@ -462,7 +466,7 @@ class Tetris:
             elif rot == 'R':
                 tests = pieces.allR_0
             else:
-                print('unknown rotation for common piece.')
+                print('unknown rotation for common piece to the left.')
                 return False
 
         for k in range(5):
@@ -480,7 +484,6 @@ class Tetris:
                     self.cur_rot_is_tspin = self.check_tspin() or self.check_mini_tspin()
                     if k == 4:
                         self.is_eligible_for_t_spin = True
-
                 return True
 
         self.set_visible()
@@ -534,7 +537,6 @@ class Tetris:
                     self.cur_rot_is_tspin = self.check_tspin() or self.check_mini_tspin()
                     if k == 4:
                         self.is_eligible_for_t_spin = True
-
                 return True
 
         self.set_visible()
@@ -584,6 +586,8 @@ class Tetris:
                 self.active_piece.x += tests[k][0]
                 self.active_piece.y += tests[k][1]
                 self.set_visible()
+                self.active_piece.rot_index = (self.active_piece.rot_index + 2) % 4
+                self.active_piece.rot = pieces.rotations[self.active_piece.rot_index]
                 return True
         self.set_visible()
         return False
@@ -619,11 +623,13 @@ class Tetris:
         moved = False
         while self.move_piece('L'):
             moved = True
+            self.has_moved = True
         return moved
 
     def das_right(self):
         moved = False
         while self.move_piece('R'):
+            self.has_moved = True
             moved = True
         return moved
 
@@ -721,7 +727,7 @@ class Tetris:
             self.held_piece = old_active
 
         self.set_visible()
-
+        self.lock_delay(False)
         self.has_held = True
 
     def sonic_drop_piece(self):
@@ -738,8 +744,24 @@ class Tetris:
         return False
 
     def hard_drop_piece(self):
+        self.lock_delay(True)
         moved = False
         while self.move_active_piece():
             self.points += 2
             moved = True
         return moved, self.spawn_next_piece()
+    def lock_delay(self,reset):
+        if reset == True:
+            self.times_lock_reset = 0
+            self.has_moved = True
+            self.locktimer = 0
+            self.lowest_y = 22
+            return
+        if self.times_lock_reset < 15:
+            self.times_lock_reset += 1
+            self.locktimer = 0
+        if self.lowest_y > self.active_piece.y:
+            self.has_moved = True
+            self.lowest_y = self.active_piece.y
+            self.times_lock_reset = 0
+            self.locktimer = 0

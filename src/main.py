@@ -149,7 +149,7 @@ def quit_program():
 
 def main():
 
-    username_list = ['Bob', 'John', 'Noob', 'Master', '6969']
+    username_list = ['Bob', 'John', 'Noob', 'Master', '6969','Gamer','Mr. Pajitnov','Alexey','sal-T']
     username = None#username_list[random.randint(0, len(username_list))]
 
     try:
@@ -223,21 +223,36 @@ def main():
 
         cur_time = time.time()
         delta = cur_time - start_time
-
         elapsed += delta
 
         total_time += elapsed
 
-        if elapsed > tetris.time_to_drop_per_level[t.level]:
-            elapsed = 0
-            if not t.move_active_piece():
-                #here
-                if not t.spawn_next_piece():
-                    quit_program()
+
+        t.time_to_check_drop += delta
+        if t.has_moved == False:
+            t.locktimer += delta
+
+        if t.time_to_check_drop > tetris.time_to_drop_per_level[t.level]:
+            t.time_to_check_drop = 0
+            if t.times_lock_reset >= 15:
+                t.lock_delay(True)
+                t.hard_drop_piece()
+                t.spawn_next_piece()
+            elif not t.move_active_piece():
+                if t.locktimer >= t.lockcheck:
+                    t.lock_delay(True)
+                    t.spawn_next_piece()
+                elif t.has_moved == True:
+                    t.has_moved = False
+                #if (not t.spawn_next_piece()):
+                    #quit_program()
 
             t.cur_rot_is_tspin = False
 
         start_time = cur_time
+
+        pre_x, pre_y, pre_r = t.active_piece.x,t.active_piece.y, t.active_piece.rot_index
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -276,8 +291,10 @@ def main():
                 if event.key == config['sonic_drop']:#pygame.K_DOWN:
                     t.sonic_drop_piece()
                 if event.key == ord('1'):
-                    t.set_active_visibility(None)
-                    t.active_piece = I()
+                    #t.set_active_visibility(None)
+                    #t.active_piece = I()
+                    t.has_moved = True
+                    t.locktimer = 0
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     left_held = False
@@ -297,7 +314,8 @@ def main():
         if right_held_timer >= DAS_value:
             t.move_piece('R')
             right_held_timer -= ARR_value
-
+        if (pre_x != t.active_piece.x or pre_y != t.active_piece.y or pre_r != t.active_piece.rot_index) and not t.has_moved:
+            t.lock_delay(False)
         render()
 
 if __name__ == '__main__':
