@@ -102,6 +102,11 @@ int main(/* int argc, char **argv */)
             board.move_piece( 1,  0, 0);
             break;
 
+            // Freeze the game
+        case 'f':
+            while (getch() != 'f');
+            break;
+
             // General inputs
         case 'r':
             board = tetris::board::Board{};
