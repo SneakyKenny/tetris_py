@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -std=c++2a -pedantic -Werror -g3
 CPPFLAGS = -lncurses
 
 SRC = \
-	  src/tetris/board.cc	\
+	  src/tetris/board/board.cc	\
 
 OBJ = $(SRC:.cc=.o)
 
