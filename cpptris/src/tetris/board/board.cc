@@ -69,6 +69,12 @@ namespace tetris::board
         board_.set(xy_to_i(x, y), val);
     }
 
+    piece::PieceType Board::get_queue_at(size_t i) const
+    {
+        size_t size = queue_.size();
+        return i < size ? queue_.at(i) : second_bag_.at(i - size);
+    }
+
     bool Board::spawn_next_piece()
     {
         ensure_complete_queue();
@@ -278,6 +284,16 @@ namespace tetris::board
     std::ostream& operator<<(std::ostream& o, const Board& b)
     {
         // TODO: Draw margin ?
+        for (size_t i = 0; i < PIECE_QUEUE_DISPLAY_LENGTH; i++)
+        {
+            o << b.get_queue_at(i);
+
+            if (i + 1 < PIECE_QUEUE_DISPLAY_LENGTH)
+                o << piece::PieceRepresentation::get_empty();
+            else
+                o << std::endl;
+        }
+
         for (ssize_t y = BOARD_HEIGHT + 2; y >= 0; y--)
         {
             o << piece::PieceRepresentation::get_border();

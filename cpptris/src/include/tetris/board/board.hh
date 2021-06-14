@@ -35,6 +35,9 @@ namespace tetris::board
         bool get_cell(size_t x, size_t y) const;
         void set_cell(size_t x, size_t y, bool val);
 
+        piece::PieceType get_queue_at(size_t i) const;
+        size_t get_queue_size() const;
+
         bool is_valid_move(char dx, char dy, char dr) const;
         bool move_piece(char dx, char dy, char dr);
 
