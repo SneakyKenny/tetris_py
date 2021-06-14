@@ -75,8 +75,11 @@ int main(/* int argc, char **argv */)
     while (true)
     {
         if (!board.move_piece(0, -1, 0))
+        {
+            board.lock_active_piece();
             if (!board.spawn_next_piece())
                 board = tetris::board::Board{};
+        }
 
         int ch = getch();
         switch (ch)

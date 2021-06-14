@@ -42,6 +42,7 @@ namespace tetris::board
         bool move_piece(char dx, char dy, char dr);
 
         bool spawn_next_piece();
+        bool lock_active_piece();
 
     private:
         board_t board_;
@@ -55,6 +56,7 @@ namespace tetris::board
         void disable_current_piece();
         bool put_piece_at(piece::PieceType type, piece::PiecePosition position);
         bool rotate_piece(char dr);
+        size_t clear_completed_lines();
     };
 
     std::ostream& operator<<(std::ostream& o, const Board& b);

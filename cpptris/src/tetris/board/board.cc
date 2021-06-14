@@ -1,6 +1,8 @@
 #include "tetris/board/board.hh"
 
 #include <algorithm>
+#include <array>
+#include <bitset>
 #include <cassert>
 #include <iostream>
 #include <random>
@@ -99,6 +101,62 @@ namespace tetris::board
 
         active_piece_type_ = piece_type;
         active_piece_position_ = spawn_position;
+
+        return true;
+    }
+
+    // TODO: optimize this shit, like... it sooooo bad
+    size_t Board::clear_completed_lines()
+    {
+        board_t mask{"1111111111"}; // 10 '1's for a complete line mask
+
+        std::array<bool, BOARD_HEIGHT * 2> completed_lines;
+        for (size_t i = 0; i < completed_lines.size(); i++)
+            completed_lines.at(i) = false;
+
+        for (size_t y = 0; y < BOARD_HEIGHT * 2; y++) // FIXME: x2 for hidden lines ?
+        {
+            board_t cp = mask;
+
+            if ((cp & board_).count() == 10)
+                completed_lines.at(y) = true;
+
+            mask <<= 10;
+        }
+
+        size_t yw = 0;
+        size_t yr = 0;
+
+        for (size_t y = 0; y < BOARD_HEIGHT * 2; y++)
+        {
+            while (completed_lines.at(y))
+            {
+                y++;
+                yr++;
+            }
+
+            if (yr >= BOARD_HEIGHT * 2)
+            {
+                for (; yw < BOARD_HEIGHT * 2; yw++)
+                    for (size_t x = 0; x < BOARD_WIDTH; x++)
+                        set_cell(x, yw, 0);
+
+                break;
+            }
+
+            for (size_t x = 0; x < BOARD_WIDTH; x++)
+                set_cell(x, yw, get_cell(x, yr));
+
+            yw++;
+            yr++;
+        }
+
+        return completed_lines.size();
+    }
+
+    bool Board::lock_active_piece()
+    {
+        clear_completed_lines();
 
         return true;
     }
