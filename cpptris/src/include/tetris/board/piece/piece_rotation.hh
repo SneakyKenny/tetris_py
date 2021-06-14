@@ -14,10 +14,12 @@ namespace tetris::board::piece
         R_W,
     };
 
+    /*
     inline PieceRotation operator+(const PieceRotation& lhs, const PieceRotation& rhs)
     {
-        return lhs + utils::utype(rhs);
+        return operator+(lhs, utils::utype(rhs));
     }
+    */
 
     inline PieceRotation operator+(const PieceRotation& lhs, const int rhs)
     {
