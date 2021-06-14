@@ -38,11 +38,17 @@ namespace tetris::board
         piece::PieceType get_queue_at(size_t i) const;
         size_t get_queue_size() const;
 
+        std::optional<piece::PieceType> get_held_piece() const;
+
+        piece::PieceType pop_piece_from_queue();
+
         bool is_valid_move(char dx, char dy, char dr) const;
         bool move_piece(char dx, char dy, char dr);
 
         bool spawn_next_piece();
         bool lock_active_piece();
+
+        bool hold_active_piece();
 
     private:
         board_t board_;
@@ -51,12 +57,19 @@ namespace tetris::board
         piece_queue_t queue_;
         piece_queue_t second_bag_;
 
+        std::optional<piece::PieceType> held_piece_;
+        bool has_held_ = false;
+
         void ensure_complete_queue(bool init = false);
         size_t xy_to_i(size_t x, size_t y) const;
         void disable_current_piece();
         bool put_piece_at(piece::PieceType type, piece::PiecePosition position);
         bool rotate_piece(char dr);
         size_t clear_completed_lines();
+
+        bool spawn_piece(piece::PieceType piece_type);
+
+        friend std::ostream& operator<<(std::ostream& o, const Board& b);
     };
 
     std::ostream& operator<<(std::ostream& o, const Board& b);

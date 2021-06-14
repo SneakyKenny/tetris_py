@@ -77,20 +77,28 @@ namespace tetris::board
         return i < size ? queue_.at(i) : second_bag_.at(i - size);
     }
 
-    bool Board::spawn_next_piece()
+    size_t Board::get_queue_size() const
+    {
+        return queue_.size();
+    }
+
+    std::optional<piece::PieceType> Board::get_held_piece() const
+    {
+        return held_piece_;
+    }
+
+    piece::PieceType Board::pop_piece_from_queue()
     {
         ensure_complete_queue();
 
         piece::PieceType piece_type = queue_.front();
         queue_.pop_front();
 
-        /*
-        std::cout << utils::utype(piece_type) << std::endl
-            << "This piece will spawn at "
-            << piece::PieceHelper::get_piece_spawn_position(piece_type)
-            << std::endl;
-        */
+        return piece_type;
+    }
 
+    bool Board::spawn_piece(piece::PieceType piece_type)
+    {
         piece::PiecePosition spawn_position =
             piece::PieceHelper::get_piece_spawn_position(piece_type);
 
@@ -103,6 +111,22 @@ namespace tetris::board
         active_piece_position_ = spawn_position;
 
         return true;
+    }
+
+    bool Board::spawn_next_piece()
+    {
+        piece::PieceType piece_type = pop_piece_from_queue();
+
+        /*
+        std::cout << utils::utype(piece_type) << std::endl
+            << "This piece will spawn at "
+            << piece::PieceHelper::get_piece_spawn_position(piece_type)
+            << std::endl;
+        */
+
+        has_held_ = false;
+
+        return spawn_piece(piece_type);
     }
 
     // TODO: optimize this shit, like... it sooooo bad
@@ -159,6 +183,25 @@ namespace tetris::board
         clear_completed_lines();
 
         return true;
+    }
+
+    bool Board::hold_active_piece()
+    {
+        if (has_held_)
+            return false;
+
+        disable_current_piece();
+
+        piece::PieceType piece_type = held_piece_
+            ? held_piece_.value()
+            : pop_piece_from_queue();
+
+        held_piece_ = active_piece_type_;
+        active_piece_type_ = piece_type;
+
+        has_held_ = true;
+
+        return spawn_piece(piece_type);
     }
 
     void Board::disable_current_piece()
@@ -342,6 +385,12 @@ namespace tetris::board
     std::ostream& operator<<(std::ostream& o, const Board& b)
     {
         // TODO: Draw margin ?
+
+        if (b.get_held_piece())
+            o << "[ " << b.get_held_piece().value() << " ] ";
+        else
+            o << "[   ] ";
+
         for (size_t i = 0; i < PIECE_QUEUE_DISPLAY_LENGTH; i++)
         {
             o << b.get_queue_at(i);
