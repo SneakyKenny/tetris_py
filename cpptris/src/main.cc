@@ -85,29 +85,51 @@ int main(/* int argc, char **argv */)
         switch (ch)
         {
             // Game inputs
+
+                // Rotation
         case 'i':
         case KEY_UP:
-            board.move_piece( 0,  0, 1);
+            board.move_piece( 0,  0,  1);
             break;
+        case 'x':
+            board.move_piece( 0,  0,  2);
+            break;
+        case 'z':
+            board.move_piece( 0,  0, -1);
+            break;
+
+                // Movements
         case 'j':
         case KEY_LEFT:
-            board.move_piece(-1,  0, 0);
-            break;
-        case 'k':
-        case KEY_DOWN:
-            board.move_piece( 0, -1, 0);
+            board.move_piece(-1,  0,  0);
             break;
         case 'l':
         case KEY_RIGHT:
-            board.move_piece( 1,  0, 0);
+            board.move_piece( 1,  0,  0);
             break;
 
-            // Freeze the game
+                // Drop
+        case 'k':
+        case KEY_DOWN:
+            board.move_piece( 0, -1,  0);
+            break;
+        case ' ':
+            while (board.move_piece(0, -1, 0));
+            break;
+
+                // Hold
+        case 'c':
+            board.hold_active_piece();
+            break;
+
+            // Other inputs
+
+                // Freeze the game
         case 'f':
             while (getch() != 'f');
             break;
 
-            // General inputs
+                // General inputs
         case 'r':
             board = tetris::board::Board{};
             break;
@@ -122,7 +144,8 @@ int main(/* int argc, char **argv */)
 
         // Actually print
         refresh();
-        usleep(100000);
+        // usleep(100000);
+        usleep(160000);
     }
 
 end:
