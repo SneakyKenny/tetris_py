@@ -1,10 +1,41 @@
-use bit_vec::BitVec;
+pub type MatrixT = u16;
 
-pub type MatrixT = BitVec;
+use crate::tetris::board::piece::{piece_type::PieceType, piece_rotation::PieceRotation, piece_position::PositionT};
 
-use crate::tetris::board::piece::{piece_type::PieceType, piece_rotation::PieceRotation};
+const IN: u16 = 0b0000111100000000;
+const IE: u16 = 0b0010001000100010;
+const IS: u16 = 0b0000000011110000;
+const IW: u16 = 0b0100010001000100;
 
-// TODO/FIXME: OH MY F*CKING G*D THIS COMPLEXITY IS HORRIBLE HOW DO I MAKE THIS STATIC ????
+const ON: u16 = 0b110110000;
+const OE: u16 = 0b011011000;
+const OS: u16 = 0b000011011;
+const OW: u16 = 0b000110110;
+
+const JN: u16 = 0b100111000;
+const JE: u16 = 0b011010010;
+const JS: u16 = 0b000111001;
+const JW: u16 = 0b010010110;
+
+const LN: u16 = 0b001111000;
+const LE: u16 = 0b010010011;
+const LS: u16 = 0b000111100;
+const LW: u16 = 0b110010010;
+
+const SN: u16 = 0b011110000;
+const SE: u16 = 0b010011001;
+const SS: u16 = 0b000011110;
+const SW: u16 = 0b100110010;
+
+const ZN: u16 = 0b110011000;
+const ZE: u16 = 0b001011010;
+const ZS: u16 = 0b000110011;
+const ZW: u16 = 0b010110100;
+
+const TN: u16 = 0b010111000;
+const TE: u16 = 0b010011010;
+const TS: u16 = 0b000111010;
+const TW: u16 = 0b010110010;
 
 pub struct PieceMatrix {
 }
@@ -12,64 +43,64 @@ pub struct PieceMatrix {
 impl PieceMatrix {
     fn get_matrix_i(piece_rotation: PieceRotation) -> MatrixT {
         match piece_rotation {
-            PieceRotation::RN => BitVec::from_bytes(&[0b00001111, 0b00000000]),
-            PieceRotation::RE => BitVec::from_bytes(&[0b00100010, 0b00100010]),
-            PieceRotation::RS => BitVec::from_bytes(&[0b00000000, 0b11110000]),
-            PieceRotation::RW => BitVec::from_bytes(&[0b01000100, 0b01000100]),
+            PieceRotation::RN => IN,
+            PieceRotation::RE => IE,
+            PieceRotation::RS => IS,
+            PieceRotation::RW => IW,
         }
     }
 
     fn get_matrix_o(piece_rotation: PieceRotation) -> MatrixT {
         match piece_rotation {
-            PieceRotation::RN => BitVec::from_bytes(&[0b1, 0b10110000]),
-            PieceRotation::RE => BitVec::from_bytes(&[0b0, 0b11011000]),
-            PieceRotation::RS => BitVec::from_bytes(&[0b0, 0b00011011]),
-            PieceRotation::RW => BitVec::from_bytes(&[0b0, 0b00110110]),
+            PieceRotation::RN => ON,
+            PieceRotation::RE => OE,
+            PieceRotation::RS => OS,
+            PieceRotation::RW => OW,
         }
     }
 
     fn get_matrix_j(piece_rotation: PieceRotation) -> MatrixT {
         match piece_rotation {
-            PieceRotation::RN => BitVec::from_bytes(&[0b1, 0b00111000]),
-            PieceRotation::RE => BitVec::from_bytes(&[0b0, 0b11010010]),
-            PieceRotation::RS => BitVec::from_bytes(&[0b0, 0b00111001]),
-            PieceRotation::RW => BitVec::from_bytes(&[0b0, 0b10010110]),
+            PieceRotation::RN => JN,
+            PieceRotation::RE => JE,
+            PieceRotation::RS => JS,
+            PieceRotation::RW => JW,
         }
     }
 
     fn get_matrix_l(piece_rotation: PieceRotation) -> MatrixT {
         match piece_rotation {
-            PieceRotation::RN => BitVec::from_bytes(&[0b0, 0b01111000]),
-            PieceRotation::RE => BitVec::from_bytes(&[0b0, 0b10010011]),
-            PieceRotation::RS => BitVec::from_bytes(&[0b0, 0b00111100]),
-            PieceRotation::RW => BitVec::from_bytes(&[0b1, 0b10010010]),
+            PieceRotation::RN => LN,
+            PieceRotation::RE => LE,
+            PieceRotation::RS => LS,
+            PieceRotation::RW => LW,
         }
     }
 
     fn get_matrix_s(piece_rotation: PieceRotation) -> MatrixT {
         match piece_rotation {
-            PieceRotation::RN => BitVec::from_bytes(&[0b0, 0b11110000]),
-            PieceRotation::RE => BitVec::from_bytes(&[0b0, 0b10011001]),
-            PieceRotation::RS => BitVec::from_bytes(&[0b0, 0b00011110]),
-            PieceRotation::RW => BitVec::from_bytes(&[0b1, 0b00110010]),
+            PieceRotation::RN => SN,
+            PieceRotation::RE => SE,
+            PieceRotation::RS => SS,
+            PieceRotation::RW => SW,
         }
     }
 
     fn get_matrix_z(piece_rotation: PieceRotation) -> MatrixT {
         match piece_rotation {
-            PieceRotation::RN => BitVec::from_bytes(&[0b1, 0b10011000]),
-            PieceRotation::RE => BitVec::from_bytes(&[0b0, 0b01011010]),
-            PieceRotation::RS => BitVec::from_bytes(&[0b0, 0b00110011]),
-            PieceRotation::RW => BitVec::from_bytes(&[0b0, 0b10110100]),
+            PieceRotation::RN => ZN,
+            PieceRotation::RE => ZE,
+            PieceRotation::RS => ZS,
+            PieceRotation::RW => ZW,
         }
     }
 
     fn get_matrix_t(piece_rotation: PieceRotation) -> MatrixT {
         match piece_rotation {
-            PieceRotation::RN => BitVec::from_bytes(&[0b0, 0b10111000]),
-            PieceRotation::RE => BitVec::from_bytes(&[0b0, 0b10011010]),
-            PieceRotation::RS => BitVec::from_bytes(&[0b0, 0b00111010]),
-            PieceRotation::RW => BitVec::from_bytes(&[0b0, 0b10110010]),
+            PieceRotation::RN => TN,
+            PieceRotation::RE => TE,
+            PieceRotation::RS => TS,
+            PieceRotation::RW => TW,
         }
     }
 
@@ -92,8 +123,13 @@ impl PieceMatrix {
         }
     }
 
-    pub fn get_inpiece_index(x: usize, y: usize, piece_type: PieceType) -> usize {
+    pub fn get_inpiece_index(x: PositionT, y: PositionT, piece_type: PieceType) -> usize {
         let piece_size: usize = PieceMatrix::get_piece_size(piece_type);
-        y * piece_size + (piece_size - x - 1)
+        y as usize * piece_size + (piece_size - x as usize - 1)
+    }
+
+    pub fn test_bit(matrix: MatrixT, piece_type: PieceType, x: PositionT, y: PositionT) -> bool {
+        let inpiece_index : usize = PieceMatrix::get_inpiece_index(x, y, piece_type);
+        matrix & (1 << inpiece_index) != 0
     }
 }

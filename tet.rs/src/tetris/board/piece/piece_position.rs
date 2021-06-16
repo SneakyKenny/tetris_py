@@ -1,9 +1,11 @@
 use crate::tetris::board::piece::piece_rotation::PieceRotation;
 
+pub type PositionT = i16;
+
 #[derive(Copy, Clone)]
 pub struct PiecePosition {
-    x: usize,
-    y: usize,
+    x: PositionT,
+    y: PositionT,
     r: PieceRotation,
 }
 
@@ -26,19 +28,19 @@ impl std::ops::Add for PiecePosition {
 }
 
 impl PiecePosition {
-    pub fn new(x: usize, y: usize, r: PieceRotation) -> Self {
+    pub fn new(x: PositionT, y: PositionT, r: PieceRotation) -> Self {
         Self {
-            x: x,
-            y: y,
-            r: r,
+            x,
+            y,
+            r,
         }
     }
 
-    pub fn get_x(self) -> usize {
+    pub fn get_x(self) -> PositionT {
         self.x
     }
 
-    pub fn get_y(self) -> usize {
+    pub fn get_y(self) -> PositionT {
         self.y
     }
 

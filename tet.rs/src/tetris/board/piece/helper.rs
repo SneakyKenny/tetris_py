@@ -1,34 +1,31 @@
-const SPAWN_X: usize = 3;
-const SPAWN_Y: usize = 19;
+use crate::tetris::board::piece::{piece_type::PieceType, piece_rotation::PieceRotation};
+use crate::tetris::board::piece::piece_position::{PiecePosition, PositionT};
 
-use crate::tetris::board::piece::{piece_type::PieceType, piece_position::PiecePosition, piece_rotation::PieceRotation};
+const SPAWN_X: PositionT = 3;
+const SPAWN_Y: PositionT = 19;
 
 pub struct Helper {
-
 }
 
 impl Helper {
-    fn get_piece_spawn_x(piece_type: PieceType) -> usize {
+    fn get_piece_spawn_x(piece_type: PieceType) -> PositionT {
         match piece_type {
+            PieceType::TO => SPAWN_X + 1,
             _ => SPAWN_X,
         }
     }
 
-    fn get_piece_spawn_y(piece_type: PieceType) -> usize {
-        match piece_type {
-            _ => SPAWN_Y,
-        }
+    fn get_piece_spawn_y() -> PositionT {
+        SPAWN_Y
     }
 
-    fn get_piece_spawn_r(piece_type: PieceType) -> PieceRotation {
-        match piece_type {
-            _ => PieceRotation::RN,
-        }
+    fn get_piece_spawn_r() -> PieceRotation {
+        PieceRotation::RN
     }
 
     pub fn get_piece_spawn_position(piece_type: PieceType) -> PiecePosition {
         PiecePosition::new(Helper::get_piece_spawn_x(piece_type),
-                           Helper::get_piece_spawn_y(piece_type),
-                           Helper::get_piece_spawn_r(piece_type))
+                           Helper::get_piece_spawn_y(),
+                           Helper::get_piece_spawn_r())
     }
 }

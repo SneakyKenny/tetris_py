@@ -1,18 +1,19 @@
 use nanorand::{RNG, WyRand};
 use bit_vec::BitVec;
 
-use crate::tetris::board::piece::{piece_type::PieceType, piece_position::PiecePosition, piece_rotation::PieceRotation, helper::Helper};
+use crate::tetris::board::piece::{piece_type::PieceType, piece_representation::PieceRepresentation, piece_rotation::PieceRotation, helper::Helper};
 use crate::tetris::board::piece::piece_matrix::{PieceMatrix, MatrixT};
+use crate::tetris::board::piece::piece_position::{PiecePosition, PositionT};
 
 type BoardT = BitVec;
 type QueueT = std::collections::VecDeque<PieceType>;
 type HeldPieceT = Option<self::PieceType>;
 
-const BOARD_WIDTH: usize = 10;
-const BOARD_HEIGHT: usize = 20;
+const BOARD_WIDTH: PositionT = 10;
+const BOARD_HEIGHT: PositionT = 20;
+const QUEUE_DISPLAY_SIZE: usize = 5;
 
-pub struct Board
-{
+pub struct Board {
     board: BoardT,
     active_piece_type: PieceType,
     active_piece_position: PiecePosition,
@@ -32,7 +33,7 @@ impl std::fmt::Display for Board {
 impl Board {
     pub fn new() -> Self {
         let mut board: Self = Self {
-            board: BoardT::with_capacity(BOARD_WIDTH * BOARD_HEIGHT * 2),
+            board: BoardT::from_elem((BOARD_WIDTH * BOARD_HEIGHT * 2) as usize, false),
             active_piece_type: PieceType::TI, // We'll set a new one right after
             active_piece_position: PiecePosition::new(0, 0, PieceRotation::RN), // Same, this will get a new value
             queue: QueueT::new(),
@@ -46,6 +47,16 @@ impl Board {
         board.spawn_next_piece();
 
         board
+    }
+
+    pub fn get_cell(&self, x: PositionT, y: PositionT) -> bool {
+        let index: usize = Board::xy_to_index(x, y);
+        self.board[index]
+    }
+
+    pub fn set_cell(&mut self, x: PositionT, y: PositionT, val: bool) {
+        let index: usize = Board::xy_to_index(x, y);
+        self.board.set(index, val);
     }
 
     fn get_random_bag(&mut self) -> QueueT {
@@ -68,7 +79,7 @@ impl Board {
             self.second_bag = self.get_random_bag();
         }
 
-        if self.queue.len() == 0 {
+        if self.queue.is_empty() {
             for _ in 0..self.second_bag.len() {
                 self.queue.push_back(self.second_bag.pop_front().unwrap());
             }
@@ -106,8 +117,8 @@ impl Board {
     }
 
     fn put_piece_at(&mut self, piece_type: PieceType, piece_position: PiecePosition) -> bool {
-        let px: usize = piece_position.get_x();
-        let py: usize = piece_position.get_y();
+        let px: PositionT = piece_position.get_x();
+        let py: PositionT = piece_position.get_y();
 
         let piece_matrix: MatrixT = PieceMatrix::get_matrix_for(piece_type, piece_position.get_rotation());
 
@@ -117,31 +128,90 @@ impl Board {
 
         for y in 0..piece_size {
             for x in 0..piece_size {
-                let inpiece_index = PieceMatrix::get_inpiece_index(x, y, piece_type);
-
-                let cell_state: bool = piece_matrix[inpiece_index];
-
-                if !cell_state {
+                if !PieceMatrix::test_bit(piece_matrix, piece_type, x as PositionT, y as PositionT) {
                     continue;
                 }
 
-                // TODO: make rust understand overflowing is ok
-                let index: usize = Board::xy_to_index(x + px, y + py);
+                let x: PositionT = x as PositionT;
+                let y: PositionT = y as PositionT;
 
                 if x + px >= BOARD_WIDTH || y + py >= BOARD_HEIGHT * 2
-                    || self.board[index] {
+                    || self.get_cell(x, y) {
                     self.board = save;
                     return false;
                 }
 
-                self.board.set(index, true);
+                self.set_cell(x + px, y + py, true);
             }
         }
 
         true
     }
 
-    fn xy_to_index(x: usize, y: usize) -> usize {
-        y * BOARD_WIDTH + x
+    fn xy_to_index(x: PositionT, y: PositionT) -> usize {
+        // TODO: assert coordinates are valid
+        (y * BOARD_WIDTH + x) as usize
+    }
+
+    pub fn is_valid_move(&self, dx: PositionT, dy: PositionT, dr: PositionT) -> bool {
+        if dx != 0 && dy != 0 || dx != 0 && dr != 0 || dy != 0 && dr != 0 {
+            return false;
+        }
+
+        if dr != 0 {
+            dr.abs() <= 2
+        } else if dx != 0 {
+            dx.abs() == 1
+        } else {
+            dy.abs() == 1
+        }
+    }
+
+    pub fn disable_current_piece(&mut self) {
+        let piece_matrix: MatrixT = PieceMatrix::get_matrix_for(self.active_piece_type, self.active_piece_position.get_rotation());
+
+        let piece_size: usize = PieceMatrix::get_piece_size(self.active_piece_type);
+
+        for y in 0..piece_size as PositionT {
+            for x in 0..piece_size as PositionT {
+                if !PieceMatrix::test_bit(piece_matrix, self.active_piece_type, x, y) {
+                    continue;
+                }
+
+                // We assume the current piece is in the board
+                self.set_cell(
+                    x + self.active_piece_position.get_x(),
+                    y + self.active_piece_position.get_y(),
+                    false
+                );
+            }
+        }
+    }
+
+    pub fn move_piece(&mut self, dx: PositionT, dy: PositionT, dr: PositionT) -> bool {
+        if !self.is_valid_move(dx, dy, dr) {
+            return false;
+        }
+
+        if dr != 0 {
+            // return self.rotate_piece(dr); // TODO
+            return true;
+        }
+
+        self.disable_current_piece();
+
+        let new_position: PiecePosition = PiecePosition::new(
+            dx + self.active_piece_position.get_x(),
+            dy + self.active_piece_position.get_y(),
+            self.active_piece_position.get_rotation()
+        );
+
+        if self.put_piece_at(self.active_piece_type, new_position) {
+            self.active_piece_position = new_position;
+            true
+        } else {
+            self.put_piece_at(self.active_piece_type, self.active_piece_position);
+            false
+        }
     }
 }
