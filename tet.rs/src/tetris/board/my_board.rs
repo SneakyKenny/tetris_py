@@ -257,4 +257,25 @@ impl Board {
             false
         }
     }
+
+    pub fn hold_active_piece(&mut self) -> bool {
+        if self.has_held {
+            return false;
+        }
+
+        self.disable_current_piece();
+
+        let piece_type: PieceType = match self.held_piece {
+            Some(piece) => piece,
+            None => self.pop_piece_from_queue(),
+        };
+
+        self.held_piece = Some(self.active_piece_type);
+        self.active_piece_type = piece_type;
+        self.has_held = true;
+
+        self.spawn_piece(piece_type)
+    }
 }
+
+// Ah :oe: les tests
