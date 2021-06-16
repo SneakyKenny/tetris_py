@@ -1,5 +1,4 @@
-pub struct PieceRepresentation {
-}
+pub struct PieceRepresentation {}
 
 impl PieceRepresentation {
     pub fn get_border() -> String {

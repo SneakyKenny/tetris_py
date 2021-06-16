@@ -10,12 +10,16 @@ pub enum PieceRotation {
 
 impl std::fmt::Display for PieceRotation {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", match *self {
-            PieceRotation::RN => "N",
-            PieceRotation::RE => "E",
-            PieceRotation::RS => "S",
-            PieceRotation::RW => "W",
-        })
+        write!(
+            f,
+            "{}",
+            match *self {
+                PieceRotation::RN => "N",
+                PieceRotation::RE => "E",
+                PieceRotation::RS => "S",
+                PieceRotation::RW => "W",
+            }
+        )
     }
 }
 

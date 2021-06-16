@@ -29,11 +29,7 @@ impl std::ops::Add for PiecePosition {
 
 impl PiecePosition {
     pub fn new(x: PositionT, y: PositionT, r: PieceRotation) -> Self {
-        Self {
-            x,
-            y,
-            r,
-        }
+        Self { x, y, r }
     }
 
     pub fn get_x(self) -> PositionT {

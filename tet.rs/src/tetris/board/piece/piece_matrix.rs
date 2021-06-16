@@ -1,6 +1,8 @@
 pub type MatrixT = u16;
 
-use crate::tetris::board::piece::{piece_type::PieceType, piece_rotation::PieceRotation, piece_position::PositionT};
+use crate::tetris::board::piece::{
+    piece_position::PositionT, piece_rotation::PieceRotation, piece_type::PieceType,
+};
 
 const IN: u16 = 0b0000111100000000;
 const IE: u16 = 0b0010001000100010;
@@ -37,8 +39,7 @@ const TE: u16 = 0b010011010;
 const TS: u16 = 0b000111010;
 const TW: u16 = 0b010110010;
 
-pub struct PieceMatrix {
-}
+pub struct PieceMatrix {}
 
 impl PieceMatrix {
     fn get_matrix_i(piece_rotation: PieceRotation) -> MatrixT {
@@ -129,7 +130,7 @@ impl PieceMatrix {
     }
 
     pub fn test_bit(matrix: MatrixT, piece_type: PieceType, x: PositionT, y: PositionT) -> bool {
-        let inpiece_index : usize = PieceMatrix::get_inpiece_index(x, y, piece_type);
+        let inpiece_index: usize = PieceMatrix::get_inpiece_index(x, y, piece_type);
         matrix & (1 << inpiece_index) != 0
     }
 }
