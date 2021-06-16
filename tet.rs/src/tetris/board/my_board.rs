@@ -26,7 +26,41 @@ pub struct Board {
 
 impl std::fmt::Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        Ok(()) // TODO
+        match self.held_piece {
+            Some(piece) => write!(f, "[ {} ]", piece),
+            None => write!(f, "[   ]"),
+        }?;
+
+        write!(f, " ")?;
+
+        for i in 0..QUEUE_DISPLAY_SIZE {
+            write!(f, "{}{}",
+                self.get_queue_at(i),
+                if i + 1 < QUEUE_DISPLAY_SIZE { " " } else { "\n" }
+            )?;
+        }
+
+        for y in (0..(BOARD_HEIGHT + 4)).rev() {
+            write!(f, "{}", PieceRepresentation::get_border())?;
+
+            for x in 0..BOARD_WIDTH {
+                write!(f, "{}", if self.get_cell(x, y) {
+                    PieceRepresentation::get_taken()
+                } else {
+                    PieceRepresentation::get_empty()
+                })?;
+            }
+
+            writeln!(f, "{}", PieceRepresentation::get_border())?;
+        }
+
+        for _ in 0..BOARD_WIDTH + 2 {
+            write!(f, "{}", PieceRepresentation::get_border())?;
+        }
+
+        writeln!(f)?;
+
+        Ok(())
     }
 }
 
@@ -85,6 +119,15 @@ impl Board {
             }
 
             self.second_bag = self.get_random_bag();
+        }
+    }
+
+    pub fn get_queue_at(&self, index: usize) -> PieceType {
+        let size: usize = self.queue.len();
+        if index < size {
+            self.queue[index]
+        } else {
+            self.second_bag[index - size]
         }
     }
 
