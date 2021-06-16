@@ -1,3 +1,5 @@
+use crate::tetris::board::piece::piece_position::PositionT;
+
 #[derive(Copy, Clone)]
 pub enum PieceRotation {
     RN,
@@ -19,4 +21,20 @@ impl std::fmt::Display for PieceRotation {
 
 impl PieceRotation {
     // TODO: add a PieceRotation and an int
+    pub fn compute_add(&self, dr: PositionT) -> Self {
+        let ulhs: PositionT = *self as PositionT;
+
+        let mut new_rotation_num: PositionT = (ulhs + dr) % 4;
+        while new_rotation_num < 0 {
+            new_rotation_num += 4;
+        }
+
+        match new_rotation_num {
+            0 => PieceRotation::RN,
+            1 => PieceRotation::RE,
+            2 => PieceRotation::RS,
+            // 3
+            _ => PieceRotation::RW,
+        }
+    }
 }

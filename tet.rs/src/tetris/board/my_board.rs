@@ -231,14 +231,35 @@ impl Board {
         }
     }
 
+    fn rotate_piece(&mut self, dr: PositionT) -> bool {
+        let new_rotation : PieceRotation = self.active_piece_position.get_rotation().compute_add(dr);
+
+        self.disable_current_piece();
+
+        // TODO: kick tables
+
+        let new_position: PiecePosition = PiecePosition::new(
+                          self.active_piece_position.get_x(),
+                          self.active_piece_position.get_y(),
+                          new_rotation
+        );
+
+        if self.put_piece_at(self.active_piece_type, new_position) {
+            self.active_piece_position = new_position;
+            true
+        } else {
+            self.put_piece_at(self.active_piece_type, self.active_piece_position);
+            false
+        }
+    }
+
     pub fn move_piece(&mut self, dx: PositionT, dy: PositionT, dr: PositionT) -> bool {
         if !self.is_valid_move(dx, dy, dr) {
             return false;
         }
 
         if dr != 0 {
-            // return self.rotate_piece(dr); // TODO
-            return true;
+            return self.rotate_piece(dr);
         }
 
         self.disable_current_piece();
