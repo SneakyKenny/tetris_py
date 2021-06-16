@@ -297,6 +297,64 @@ impl Board {
 
         self.spawn_piece(piece_type)
     }
+
+    fn is_line_completed(&self, y: PositionT) -> bool {
+        // TODO: optimize ffs
+
+        for x in 0..BOARD_WIDTH {
+            if !self.get_cell(x, y) {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    fn clear_completed_lines(&mut self) {
+        let mut completed_lines: [bool; BOARD_HEIGHT as usize * 2] = [false; BOARD_HEIGHT as usize* 2];
+
+        for y in 0..(BOARD_HEIGHT * 2) {
+            if self.is_line_completed(y) {
+                completed_lines[y as usize] = true;
+            }
+        }
+
+        let mut y: PositionT = 0;
+        let mut yr: PositionT = 0;
+        let mut yw: PositionT = 0;
+
+        while y < BOARD_HEIGHT * 2 {
+            while completed_lines[y as usize] {
+                y += 1;
+                yr += 1;
+            }
+
+            if yr >= BOARD_HEIGHT * 2 {
+                while yw <= BOARD_HEIGHT * 2 {
+                    for x in 0..BOARD_WIDTH {
+                        self.set_cell(x, yw, false);
+                    }
+
+                    yw += 1;
+                }
+            }
+
+            for x in 0..BOARD_WIDTH {
+                self.set_cell(x, y, self.get_cell(x, yr));
+            }
+
+            yr += 1;
+            yw += 1;
+
+            y += 1;
+        }
+    }
+
+    pub fn lock_active_piece(&mut self) -> bool {
+        self.clear_completed_lines();
+
+        true
+    }
 }
 
 // Ah :oe: les tests
