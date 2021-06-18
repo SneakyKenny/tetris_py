@@ -1,10 +1,6 @@
 pub type MatrixT = u16;
 
-use super::{
-    piece_position::PositionT,
-    piece_rotation::PieceRotation,
-    piece_type::PieceType,
-};
+use super::{piece_position::PositionT, piece_rotation::PieceRotation, piece_type::PieceType};
 
 const IN: u16 = 0b0000_1111_0000_0000;
 const IE: u16 = 0b0010_0010_0010_0010;

@@ -82,7 +82,11 @@ impl Board {
         let mut board: Self = Self {
             board: BoardT::from_elem((BOARD_WIDTH * BOARD_HEIGHT * 2) as usize, false),
             active_piece_type: piece_type::PieceType::TI, // We'll set a new one right after
-            active_piece_position: piece_position::PiecePosition::new(0, 0, piece_rotation::PieceRotation::RN), // Same, this will get a new value
+            active_piece_position: piece_position::PiecePosition::new(
+                0,
+                0,
+                piece_rotation::PieceRotation::RN,
+            ), // Same, this will get a new value
             queue: QueueT::new(),
             second_bag: QueueT::new(),
             held_piece: None,
@@ -101,7 +105,12 @@ impl Board {
         self.board[index]
     }
 
-    pub fn set_cell(&mut self, x: piece_position::PositionT, y: piece_position::PositionT, val: bool) {
+    pub fn set_cell(
+        &mut self,
+        x: piece_position::PositionT,
+        y: piece_position::PositionT,
+        val: bool,
+    ) {
         let index: usize = Board::xy_to_index(x, y);
         self.board.set(index, val);
     }
@@ -159,7 +168,8 @@ impl Board {
     }
 
     fn spawn_piece(&mut self, piece_type: piece_type::PieceType) -> bool {
-        let spawn_position: piece_position::PiecePosition = helper::get_piece_spawn_position(piece_type);
+        let spawn_position: piece_position::PiecePosition =
+            helper::get_piece_spawn_position(piece_type);
 
         match self.put_piece_at(piece_type, spawn_position) {
             true => {
@@ -171,7 +181,11 @@ impl Board {
         }
     }
 
-    fn put_piece_at(&mut self, piece_type: piece_type::PieceType, piece_position: piece_position::PiecePosition) -> bool {
+    fn put_piece_at(
+        &mut self,
+        piece_type: piece_type::PieceType,
+        piece_position: piece_position::PiecePosition,
+    ) -> bool {
         let px: piece_position::PositionT = piece_position.get_x();
         let py: piece_position::PositionT = piece_position.get_y();
 
@@ -184,8 +198,12 @@ impl Board {
 
         for y in 0..piece_size {
             for x in 0..piece_size {
-                if !piece_matrix::test_bit(piece_matrix, piece_type, x as piece_position::PositionT, y as piece_position::PositionT)
-                {
+                if !piece_matrix::test_bit(
+                    piece_matrix,
+                    piece_type,
+                    x as piece_position::PositionT,
+                    y as piece_position::PositionT,
+                ) {
                     continue;
                 }
 
@@ -209,12 +227,17 @@ impl Board {
         (y * BOARD_WIDTH + x) as usize
     }
 
-    pub fn is_valid_move(&self, dx: piece_position::PositionT, dy: piece_position::PositionT, dr: piece_position::PositionT) -> bool {
+    pub fn is_valid_move(
+        &self,
+        dx: piece_position::PositionT,
+        dy: piece_position::PositionT,
+        dr: piece_position::PositionT,
+    ) -> bool {
         match (dx, dy, dr) {
             (dx, 0, 0) if dx != 0 => dx.abs() == 1,
             (0, dy, 0) if dy != 0 => dy.abs() == 1,
             (0, 0, dr) if dr != 0 => dr.abs() <= 2,
-            _ => false
+            _ => false,
         }
     }
 
@@ -243,14 +266,18 @@ impl Board {
     }
 
     fn rotate_piece(&mut self, dr: piece_position::PositionT) -> bool {
-        let new_rotation: piece_rotation::PieceRotation = self.active_piece_position.get_rotation().compute_add(dr);
+        let new_rotation: piece_rotation::PieceRotation =
+            self.active_piece_position.get_rotation().compute_add(dr);
 
         self.disable_current_piece();
 
-        for kick in kick_tables::get_kick_table(self.active_piece_type,
+        for kick in kick_tables::get_kick_table(
+            self.active_piece_type,
             self.active_piece_position.get_rotation(),
-            new_rotation).iter() {
-
+            new_rotation,
+        )
+        .iter()
+        {
             let new_position: piece_position::PiecePosition = piece_position::PiecePosition::new(
                 kick.0 + self.active_piece_position.get_x(),
                 kick.1 + self.active_piece_position.get_y(),
@@ -267,7 +294,12 @@ impl Board {
         false
     }
 
-    pub fn move_piece(&mut self, dx: piece_position::PositionT, dy: piece_position::PositionT, dr: piece_position::PositionT) -> bool {
+    pub fn move_piece(
+        &mut self,
+        dx: piece_position::PositionT,
+        dy: piece_position::PositionT,
+        dr: piece_position::PositionT,
+    ) -> bool {
         if !self.is_valid_move(dx, dy, dr) {
             return false;
         }
