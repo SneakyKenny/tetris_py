@@ -247,21 +247,24 @@ impl Board {
 
         self.disable_current_piece();
 
-        // TODO: kick tables
+        for kick in kick_tables::get_kick_table(self.active_piece_type,
+            self.active_piece_position.get_rotation(),
+            new_rotation).iter() {
 
-        let new_position: piece_position::PiecePosition = piece_position::PiecePosition::new(
-            self.active_piece_position.get_x(),
-            self.active_piece_position.get_y(),
-            new_rotation,
-        );
+            let new_position: piece_position::PiecePosition = piece_position::PiecePosition::new(
+                kick.0 + self.active_piece_position.get_x(),
+                kick.1 + self.active_piece_position.get_y(),
+                new_rotation,
+            );
 
-        if self.put_piece_at(self.active_piece_type, new_position) {
-            self.active_piece_position = new_position;
-            true
-        } else {
-            self.put_piece_at(self.active_piece_type, self.active_piece_position);
-            false
+            if self.put_piece_at(self.active_piece_type, new_position) {
+                self.active_piece_position = new_position;
+                return true;
+            }
         }
+
+        self.put_piece_at(self.active_piece_type, self.active_piece_position);
+        false
     }
 
     pub fn move_piece(&mut self, dx: piece_position::PositionT, dy: piece_position::PositionT, dr: piece_position::PositionT) -> bool {
