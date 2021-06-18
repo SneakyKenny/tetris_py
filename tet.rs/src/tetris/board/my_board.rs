@@ -209,17 +209,12 @@ impl Board {
         (y * BOARD_WIDTH + x) as usize
     }
 
-    pub fn is_valid_move(&self, dx: PositionT, dy: PositionT, dr: PositionT) -> bool {
-        if dx != 0 && dy != 0 || dx != 0 && dr != 0 || dy != 0 && dr != 0 {
-            return false;
-        }
-
-        if dr != 0 {
-            dr.abs() <= 2
-        } else if dx != 0 {
-            dx.abs() == 1
-        } else {
-            dy.abs() == 1
+    pub fn is_valid_move(&self, dx: piece_position::PositionT, dy: piece_position::PositionT, dr: piece_position::PositionT) -> bool {
+        match (dx, dy, dr) {
+            (dx, 0, 0) if dx != 0 => dx.abs() == 1,
+            (0, dy, 0) if dy != 0 => dy.abs() == 1,
+            (0, 0, dr) if dr != 0 => dr.abs() <= 2,
+            _ => false
         }
     }
 
