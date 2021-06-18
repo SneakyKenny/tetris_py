@@ -1,4 +1,4 @@
-use crate::tetris::board::piece::piece_position::PositionT;
+use super::piece_position::PositionT;
 
 #[derive(Copy, Clone)]
 pub enum PieceRotation {
@@ -24,7 +24,6 @@ impl std::fmt::Display for PieceRotation {
 }
 
 impl PieceRotation {
-    // TODO: add a PieceRotation and an int
     pub fn compute_add(&self, dr: PositionT) -> Self {
         let ulhs: PositionT = *self as PositionT;
 

@@ -1,4 +1,4 @@
-use crate::tetris::board::piece::piece_rotation::PieceRotation;
+use super::piece_rotation::PieceRotation;
 
 pub type PositionT = i16;
 
