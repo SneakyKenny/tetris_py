@@ -31,12 +31,17 @@ impl std::fmt::Display for Board {
 
         write!(f, " ")?;
 
+        let max_len: usize = self.queue.len() + self.second_bag.len();
         for i in 0..QUEUE_DISPLAY_SIZE {
+            if i >= max_len {
+                break;
+            }
+
             write!(
                 f,
                 "{}{}",
                 self.get_queue_at(i),
-                if i + 1 < QUEUE_DISPLAY_SIZE {
+                if i + 1 < QUEUE_DISPLAY_SIZE && i + 1 < max_len {
                     " "
                 } else {
                     "\n"
