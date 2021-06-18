@@ -1,6 +1,3 @@
-extern crate bit_vec;
-extern crate nanorand;
-
 mod tetris;
 
 use tetris::board::my_board::Board;
