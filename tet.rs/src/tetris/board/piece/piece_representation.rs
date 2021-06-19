@@ -9,3 +9,11 @@ pub fn get_empty() -> String {
 pub fn get_taken() -> String {
     String::from("x")
 }
+
+pub fn get_ghost() -> String {
+    String::from("~")
+}
+
+pub fn get_garbage() -> String {
+    get_taken()
+}

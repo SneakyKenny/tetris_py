@@ -22,6 +22,8 @@ pub struct Board {
     rng: WyRand,
 }
 
+// TODO: Store dropped pieces types so we can display their color
+
 impl std::fmt::Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self.held_piece {
@@ -53,17 +55,26 @@ impl std::fmt::Display for Board {
             write!(f, "{}", piece_representation::get_border())?;
 
             for x in 0..BOARD_WIDTH {
-                write!(
-                    f,
-                    "{}",
-                    if self.get_cell(x, y) {
+                let cell_state: bool = self.get_cell(x, y);
+                if cell_state {
+                    write!(
+                        f,
+                        "{}{}",
+                        piece_color::get_piece_color(
+                            piece_type::PieceType::TT,
+                            false,
+                            false,
+                            false
+                        ), // FIXME: color is hardcoded
                         piece_representation::get_taken()
-                    } else {
-                        piece_representation::get_empty()
-                    }
-                )?;
+                    )?;
+                } else {
+                    piece_color::reset_color(f)?;
+                    write!(f, "{}", piece_representation::get_empty())?;
+                }
             }
 
+            piece_color::reset_color(f)?;
             writeln!(f, "{}", piece_representation::get_border())?;
         }
 
@@ -400,7 +411,7 @@ impl Board {
     pub fn lock_active_piece(&mut self) -> bool {
         self.clear_completed_lines();
 
-        true
+        self.spawn_next_piece()
     }
 }
 

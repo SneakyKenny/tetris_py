@@ -1,3 +1,5 @@
+use termion::*;
+
 #[derive(Copy, Clone)]
 pub enum PieceType {
     TI,
