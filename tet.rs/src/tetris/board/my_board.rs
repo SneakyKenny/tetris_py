@@ -3,16 +3,21 @@ use nanorand::{WyRand, RNG};
 
 use super::piece::*;
 
-type BoardT = BitVec;
-type QueueT = std::collections::VecDeque<piece_type::PieceType>;
-type HeldPieceT = Option<piece_type::PieceType>;
+const QUEUE_DISPLAY_SIZE: usize = 5;
 
 const BOARD_WIDTH: piece_position::PositionT = 10;
 const BOARD_HEIGHT: piece_position::PositionT = 20;
-const QUEUE_DISPLAY_SIZE: usize = 5;
+const BOARD_SIZE: usize = BOARD_WIDTH as usize * BOARD_HEIGHT as usize * 2;
+
+type BoardT = BitVec;
+type OptionalTypeT = Option<piece_type::PieceType>;
+type TypedBoardT = [OptionalTypeT; BOARD_SIZE];
+type QueueT = std::collections::VecDeque<piece_type::PieceType>;
+type HeldPieceT = OptionalTypeT;
 
 pub struct Board {
     board: BoardT,
+    piece_types: TypedBoardT,
     active_piece_type: piece_type::PieceType,
     active_piece_position: piece_position::PiecePosition,
     queue: QueueT,
@@ -26,10 +31,19 @@ pub struct Board {
 
 impl std::fmt::Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self.held_piece {
-            Some(piece) => write!(f, "[ {} ]", piece),
-            None => write!(f, "[   ]"),
-        }?;
+        piece_color::reset_color(f)?;
+
+        write!(
+            f,
+            "[ {}{}{} ]",
+            piece_color::get_piece_color(self.held_piece, false, false),
+            if self.held_piece.is_none() {
+                " ".to_string()
+            } else {
+                format!("{}", self.held_piece.unwrap())
+            },
+            piece_color::get_piece_color(None, false, false)
+        )?;
 
         write!(f, " ")?;
 
@@ -39,10 +53,13 @@ impl std::fmt::Display for Board {
                 break;
             }
 
+            let queue_at_index: OptionalTypeT = self.get_queue_at(i);
+
             write!(
                 f,
-                "{}{}",
-                self.get_queue_at(i),
+                "{}{}{}",
+                piece_color::get_piece_color(queue_at_index, false, false),
+                format!("{}", queue_at_index.unwrap()),
                 if i + 1 < QUEUE_DISPLAY_SIZE && i + 1 < max_len {
                     " "
                 } else {
@@ -50,6 +67,8 @@ impl std::fmt::Display for Board {
                 }
             )?;
         }
+
+        piece_color::reset_color(f)?;
 
         for y in (0..(BOARD_HEIGHT + 4)).rev() {
             write!(f, "{}", piece_representation::get_border())?;
@@ -60,16 +79,10 @@ impl std::fmt::Display for Board {
                     write!(
                         f,
                         "{}{}",
-                        piece_color::get_piece_color(
-                            piece_type::PieceType::TT,
-                            false,
-                            false,
-                            false
-                        ), // FIXME: color is hardcoded
+                        piece_color::get_piece_color(self.get_cell_type(x, y), false, false), // FIXME: color is hardcoded
                         piece_representation::get_taken()
                     )?;
                 } else {
-                    piece_color::reset_color(f)?;
                     write!(f, "{}", piece_representation::get_empty())?;
                 }
             }
@@ -82,16 +95,15 @@ impl std::fmt::Display for Board {
             write!(f, "{}", piece_representation::get_border())?;
         }
 
-        write!(f, "\r\n")?;
-
-        Ok(())
+        write!(f, "\r\n")
     }
 }
 
 impl Board {
     pub fn new() -> Self {
         let mut board: Self = Self {
-            board: BoardT::from_elem((BOARD_WIDTH * BOARD_HEIGHT * 2) as usize, false),
+            board: BoardT::from_elem(BOARD_SIZE, false),
+            piece_types: [None; BOARD_SIZE],
             active_piece_type: piece_type::PieceType::TI, // We'll set a new one right after
             active_piece_position: piece_position::PiecePosition::new(
                 0,
@@ -115,10 +127,10 @@ impl Board {
         &self,
         x: piece_position::PositionT,
         y: piece_position::PositionT,
-    ) -> Result<bool, &'static str> {
+    ) -> Option<bool> {
         match Board::xy_to_index(x, y) {
-            Ok(index) => Ok(self.board[index]),
-            Err(msg) => Err(msg),
+            Ok(index) => Some(self.board[index]),
+            Err(_) => None,
         }
     }
 
@@ -127,13 +139,33 @@ impl Board {
         x: piece_position::PositionT,
         y: piece_position::PositionT,
         val: bool,
-    ) -> Result<bool, &'static str> {
+    ) {
         match Board::xy_to_index(x, y) {
-            Ok(index) => {
-                self.board.set(index, val);
-                Ok(val)
-            }
-            Err(msg) => Err(msg),
+            Ok(index) => self.board.set(index, val),
+            Err(_) => {}
+        }
+    }
+
+    pub fn get_cell_type(
+        &self,
+        x: piece_position::PositionT,
+        y: piece_position::PositionT,
+    ) -> OptionalTypeT {
+        match Board::xy_to_index(x, y) {
+            Ok(index) => self.piece_types[index],
+            Err(_) => None,
+        }
+    }
+
+    pub fn set_cell_type(
+        &mut self,
+        x: piece_position::PositionT,
+        y: piece_position::PositionT,
+        val: OptionalTypeT,
+    ) {
+        match Board::xy_to_index(x, y) {
+            Ok(index) => self.piece_types[index] = val,
+            Err(_) => {}
         }
     }
 
@@ -166,12 +198,18 @@ impl Board {
         }
     }
 
-    pub fn get_queue_at(&self, index: usize) -> piece_type::PieceType {
+    pub fn get_queue_at(&self, index: usize) -> OptionalTypeT {
+        let max_len: usize = self.queue.len() + self.second_bag.len();
+
+        if index >= max_len {
+            return None;
+        }
+
         let size: usize = self.queue.len();
         if index < size {
-            self.queue[index]
+            Some(self.queue[index])
         } else {
-            self.second_bag[index - size]
+            Some(self.second_bag[index - size])
         }
     }
 
@@ -236,26 +274,26 @@ impl Board {
                 // board state at this position
                 if x + px >= BOARD_WIDTH
                     || y + py >= BOARD_HEIGHT * 2
-                    || self.get_cell(x + px, y + py).is_err()
+                    || self.get_cell(x + px, y + py).is_none()
                     || self.get_cell(x + px, y + py).unwrap()
                 {
                     self.board = save;
                     return false;
                 }
 
-                self.set_cell(x + px, y + py, true).unwrap();
-                /*
-                let board_state_here = self.get_cell(x, y);
-                if board_state_here.is_err() || board_state_here.unwrap() {
-                    self.board = save;
-                    return false;
+                self.set_cell(x + px, y + py, true);
+            }
+        }
+
+        // Set piece type
+        for y in 0..piece_size as piece_position::PositionT {
+            for x in 0..piece_size as piece_position::PositionT {
+                if !piece_matrix::test_bit(piece_matrix, piece_type, x, y) {
+                    continue;
                 }
 
-                if self.set_cell(x + px, y + py, true).is_err() {
-                    self.board = save;
-                    return false;
-                }
-                */
+                let index: usize = Board::xy_to_index(x + px, y + py).unwrap();
+                self.piece_types[index] = Some(piece_type);
             }
         }
 
@@ -306,8 +344,7 @@ impl Board {
                     x + self.active_piece_position.get_x(),
                     y + self.active_piece_position.get_y(),
                     false,
-                )
-                .unwrap();
+                );
             }
         }
     }
@@ -430,7 +467,8 @@ impl Board {
             if yread >= BOARD_HEIGHT * 2 {
                 while ywrite <= BOARD_HEIGHT * 2 {
                     for x in 0..BOARD_WIDTH {
-                        self.set_cell(x, ywrite, false).unwrap();
+                        self.set_cell(x, ywrite, false);
+                        self.set_cell_type(x, ywrite, None);
                     }
 
                     ywrite += 1;
@@ -438,8 +476,8 @@ impl Board {
             }
 
             for x in 0..BOARD_WIDTH {
-                self.set_cell(x, ywrite, self.get_cell(x, yread).unwrap())
-                    .unwrap();
+                self.set_cell(x, ywrite, self.get_cell(x, yread).unwrap());
+                self.set_cell_type(x, ywrite, self.get_cell_type(x, yread));
             }
 
             yread += 1;

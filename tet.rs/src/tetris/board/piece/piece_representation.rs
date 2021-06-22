@@ -1,17 +1,17 @@
 pub fn get_border() -> String {
-    String::from("o")
+    String::from("OO")
 }
 
 pub fn get_empty() -> String {
-    String::from(" ")
+    String::from("  ")
 }
 
 pub fn get_taken() -> String {
-    String::from("x")
+    String::from("XX")
 }
 
 pub fn get_ghost() -> String {
-    String::from("~")
+    String::from("~~")
 }
 
 pub fn get_garbage() -> String {

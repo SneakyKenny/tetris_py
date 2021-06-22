@@ -39,6 +39,11 @@ impl Tetris {
         match input {
             Key::Char('q') => false,
 
+            Key::Char('r') => {
+                self.board = Board::new();
+                true
+            }
+
             // Hard-drop
             Key::Char(' ') => {
                 while self.board.move_piece(0, -1, 0) {}

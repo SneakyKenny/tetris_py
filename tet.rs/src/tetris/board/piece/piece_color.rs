@@ -84,13 +84,8 @@ const DARK_GREY: ColorT = ColorT {
 };
 
 // TODO: garbage color
-pub fn get_piece_color(
-    piece_type: PieceType,
-    is_reset: bool,
-    is_garbage: bool,
-    is_ghost: bool,
-) -> String {
-    if is_reset {
+pub fn get_piece_color(piece_type: Option<PieceType>, is_ghost: bool, is_garbage: bool) -> String {
+    if piece_type.is_none() {
         return WHITE.fg_string();
     }
 
@@ -98,7 +93,7 @@ pub fn get_piece_color(
         return DARK_GREY.fg_string();
     }
 
-    match piece_type {
+    match piece_type.unwrap() {
         PieceType::TI => if is_ghost { L_CYAN } else { D_CYAN }.fg_string(),
         PieceType::TO => if is_ghost { L_YELLOW } else { D_YELLOW }.fg_string(),
         PieceType::TJ => if is_ghost { L_BLUE } else { D_BLUE }.fg_string(),
@@ -110,5 +105,6 @@ pub fn get_piece_color(
 }
 
 pub fn reset_color(f: &mut std::fmt::Formatter) -> std::fmt::Result {
-    write!(f, "{}", termion::color::Fg(termion::color::Reset))
+    // write!(f, "{}", termion::color::Fg(termion::color::Reset))
+    write!(f, "{}", termion::color::Fg(WHITE))
 }
