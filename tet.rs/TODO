@@ -1,0 +1,5 @@
+[ ] Ghost piece
+[ ] Garbage
+[w] Colors (maybe through argv to disable ?)
+[w] Keyboard I/O
+    - move cursor to the top to avoid spamming terminal with boards
