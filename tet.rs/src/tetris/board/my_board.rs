@@ -46,7 +46,7 @@ impl std::fmt::Display for Board {
                 if i + 1 < QUEUE_DISPLAY_SIZE && i + 1 < max_len {
                     " "
                 } else {
-                    "\n"
+                    "\r\n"
                 }
             )?;
         }
@@ -75,14 +75,14 @@ impl std::fmt::Display for Board {
             }
 
             piece_color::reset_color(f)?;
-            writeln!(f, "{}", piece_representation::get_border())?;
+            write!(f, "{}\r\n", piece_representation::get_border())?;
         }
 
         for _ in 0..BOARD_WIDTH + 2 {
             write!(f, "{}", piece_representation::get_border())?;
         }
 
-        writeln!(f)?;
+        write!(f, "\r\n")?;
 
         Ok(())
     }

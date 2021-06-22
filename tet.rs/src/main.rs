@@ -1,21 +1,37 @@
+use termion::{raw::IntoRawMode, input::TermRead};
+use std::io::{Write, stdout, stdin};
+
 mod tetris;
 
-use tetris::board::my_board::Board;
+use crate::tetris::my_tetris::Tetris;
 
 fn main() {
-    println!("Hello, world!");
+    let mut tetris: Tetris = Tetris::new();
+    let mut stdout = stdout().into_raw_mode().unwrap();
 
-    let mut board: Board = Board::new();
+    writeln!(stdout, "{}", tetris).unwrap();
 
-    board.hold_active_piece();
+    for input in stdin().keys() {
+        if !tetris.process_input(input.unwrap()) {
+            break;
+        }
 
-    board.move_piece(0, 0, -1);
-    while board.move_piece(1, 0, 0) {}
-    board.move_piece(0, -1, 0);
-    board.move_piece(0, -1, 0);
-    board.move_piece(0, -1, 0);
+        writeln!(stdout, "{}", tetris).unwrap();
+    }
 
-    board.lock_active_piece();
-
-    print!("{}", board);
+    /*
+    // input experiment
+    match input.unwrap() {
+        Key::Char('q') | Key::Esc => std::process::exit(0),
+        Key::Char(c) => format!("{}", c),
+        Key::Alt(c) => format!("^[{}", c.to_lowercase()),
+        Key::Ctrl(c) => format!("^{}", c.to_uppercase()),
+        Key::Left => String::from("←"),
+        Key::Right => String::from("→"),
+        Key::Up => String::from("↑"),
+        Key::Down => String::from("↓"),
+        Key::Backspace => String::from("×"),
+        _ => String::from("wtf"),
+    }
+    */
 }
