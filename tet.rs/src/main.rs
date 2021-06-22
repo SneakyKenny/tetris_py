@@ -9,14 +9,28 @@ fn main() {
     let mut tetris: Tetris = Tetris::new();
     let mut stdout = stdout().into_raw_mode().unwrap();
 
-    writeln!(stdout, "{}", tetris).unwrap();
+    write!(
+        stdout,
+        "{}{}{}",
+        termion::clear::All,
+        termion::cursor::Goto(1, 1),
+        tetris
+    )
+    .unwrap();
 
     for input in stdin().keys() {
         if !tetris.process_input(input.unwrap()) {
             break;
         }
 
-        writeln!(stdout, "{}", tetris).unwrap();
+        write!(
+            stdout,
+            "{}{}{}",
+            termion::clear::All,
+            termion::cursor::Goto(1, 1),
+            tetris
+        )
+        .unwrap();
     }
 
     /*
