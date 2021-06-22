@@ -55,7 +55,7 @@ impl std::fmt::Display for Board {
             write!(f, "{}", piece_representation::get_border())?;
 
             for x in 0..BOARD_WIDTH {
-                let cell_state: bool = self.get_cell(x, y);
+                let cell_state: bool = self.get_cell(x, y).unwrap();
                 if cell_state {
                     write!(
                         f,
@@ -111,9 +111,11 @@ impl Board {
         board
     }
 
-    pub fn get_cell(&self, x: piece_position::PositionT, y: piece_position::PositionT) -> bool {
-        let index: usize = Board::xy_to_index(x, y);
-        self.board[index]
+    pub fn get_cell(&self, x: piece_position::PositionT, y: piece_position::PositionT) -> Result<bool, &'static str> {
+        match Board::xy_to_index(x, y) {
+            Ok(index) => Ok(self.board[index]),
+            Err(msg) => Err(msg),
+        }
     }
 
     pub fn set_cell(
@@ -121,9 +123,14 @@ impl Board {
         x: piece_position::PositionT,
         y: piece_position::PositionT,
         val: bool,
-    ) {
-        let index: usize = Board::xy_to_index(x, y);
-        self.board.set(index, val);
+    ) -> Result<bool, &'static str> {
+        match Board::xy_to_index(x, y) {
+            Ok(index) => {
+                self.board.set(index, val);
+                Ok(val)
+            },
+            Err(msg) => Err(msg),
+        }
     }
 
     fn get_random_bag(&mut self) -> QueueT {
@@ -221,21 +228,40 @@ impl Board {
                 let x: piece_position::PositionT = x as piece_position::PositionT;
                 let y: piece_position::PositionT = y as piece_position::PositionT;
 
-                if x + px >= BOARD_WIDTH || y + py >= BOARD_HEIGHT * 2 || self.get_cell(x, y) {
+                // FIXME: properly check both validity of position and
+                // board state at this position
+                if x + px >= BOARD_WIDTH || y + py >= BOARD_HEIGHT * 2
+                    || self.get_cell(x + px, y + py).is_err()
+                    || self.get_cell(x + px, y + py).unwrap() {
                     self.board = save;
                     return false;
                 }
 
-                self.set_cell(x + px, y + py, true);
+                self.set_cell(x + px, y + py, true).unwrap();
+                /*
+                let board_state_here = self.get_cell(x, y);
+                if board_state_here.is_err() || board_state_here.unwrap() {
+                    self.board = save;
+                    return false;
+                }
+
+                if self.set_cell(x + px, y + py, true).is_err() {
+                    self.board = save;
+                    return false;
+                }
+                */
             }
         }
 
         true
     }
 
-    fn xy_to_index(x: piece_position::PositionT, y: piece_position::PositionT) -> usize {
-        // TODO: assert coordinates are valid
-        (y * BOARD_WIDTH + x) as usize
+    fn xy_to_index(x: piece_position::PositionT, y: piece_position::PositionT) -> Result<usize, &'static str> {
+        if x < 0 || y < 0 || x >= BOARD_WIDTH || y >= BOARD_HEIGHT * 2 {
+            Err("Coordinate is outside the board.")
+        } else {
+            Ok((y * BOARD_WIDTH + x) as usize)
+        }
     }
 
     pub fn is_valid_move(
@@ -252,7 +278,7 @@ impl Board {
         }
     }
 
-    pub fn disable_current_piece(&mut self) {
+    fn disable_current_piece(&mut self) {
         let piece_matrix: piece_matrix::MatrixT = piece_matrix::get_matrix_for(
             self.active_piece_type,
             self.active_piece_position.get_rotation(),
@@ -271,9 +297,13 @@ impl Board {
                     x + self.active_piece_position.get_x(),
                     y + self.active_piece_position.get_y(),
                     false,
-                );
+                ).unwrap();
             }
         }
+    }
+
+    fn enable_current_piece(&mut self) {
+        self.put_piece_at(self.active_piece_type, self.active_piece_position);
     }
 
     fn rotate_piece(&mut self, dr: piece_position::PositionT) -> bool {
@@ -301,7 +331,7 @@ impl Board {
             }
         }
 
-        self.put_piece_at(self.active_piece_type, self.active_piece_position);
+        self.enable_current_piece();
         false
     }
 
@@ -359,7 +389,7 @@ impl Board {
         // TODO: optimize ffs
 
         for x in 0..BOARD_WIDTH {
-            if !self.get_cell(x, y) {
+            if !self.get_cell(x, y).unwrap() {
                 return false;
             }
         }
@@ -390,7 +420,7 @@ impl Board {
             if yr >= BOARD_HEIGHT * 2 {
                 while yw <= BOARD_HEIGHT * 2 {
                     for x in 0..BOARD_WIDTH {
-                        self.set_cell(x, yw, false);
+                        self.set_cell(x, yw, false).unwrap();
                     }
 
                     yw += 1;
@@ -398,7 +428,7 @@ impl Board {
             }
 
             for x in 0..BOARD_WIDTH {
-                self.set_cell(x, y, self.get_cell(x, yr));
+                self.set_cell(x, y, self.get_cell(x, yr).unwrap()).unwrap();
             }
 
             yr += 1;
@@ -409,7 +439,7 @@ impl Board {
     }
 
     pub fn lock_active_piece(&mut self) -> bool {
-        self.clear_completed_lines();
+        // self.clear_completed_lines();
 
         self.spawn_next_piece()
     }
