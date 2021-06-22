@@ -111,7 +111,11 @@ impl Board {
         board
     }
 
-    pub fn get_cell(&self, x: piece_position::PositionT, y: piece_position::PositionT) -> Result<bool, &'static str> {
+    pub fn get_cell(
+        &self,
+        x: piece_position::PositionT,
+        y: piece_position::PositionT,
+    ) -> Result<bool, &'static str> {
         match Board::xy_to_index(x, y) {
             Ok(index) => Ok(self.board[index]),
             Err(msg) => Err(msg),
@@ -128,7 +132,7 @@ impl Board {
             Ok(index) => {
                 self.board.set(index, val);
                 Ok(val)
-            },
+            }
             Err(msg) => Err(msg),
         }
     }
@@ -230,9 +234,11 @@ impl Board {
 
                 // FIXME: properly check both validity of position and
                 // board state at this position
-                if x + px >= BOARD_WIDTH || y + py >= BOARD_HEIGHT * 2
+                if x + px >= BOARD_WIDTH
+                    || y + py >= BOARD_HEIGHT * 2
                     || self.get_cell(x + px, y + py).is_err()
-                    || self.get_cell(x + px, y + py).unwrap() {
+                    || self.get_cell(x + px, y + py).unwrap()
+                {
                     self.board = save;
                     return false;
                 }
@@ -256,7 +262,10 @@ impl Board {
         true
     }
 
-    fn xy_to_index(x: piece_position::PositionT, y: piece_position::PositionT) -> Result<usize, &'static str> {
+    fn xy_to_index(
+        x: piece_position::PositionT,
+        y: piece_position::PositionT,
+    ) -> Result<usize, &'static str> {
         if x < 0 || y < 0 || x >= BOARD_WIDTH || y >= BOARD_HEIGHT * 2 {
             Err("Coordinate is outside the board.")
         } else {
@@ -297,7 +306,8 @@ impl Board {
                     x + self.active_piece_position.get_x(),
                     y + self.active_piece_position.get_y(),
                     false,
-                ).unwrap();
+                )
+                .unwrap();
             }
         }
     }
@@ -408,38 +418,39 @@ impl Board {
         }
 
         let mut y: piece_position::PositionT = 0;
-        let mut yr: piece_position::PositionT = 0;
-        let mut yw: piece_position::PositionT = 0;
+        let mut yread: piece_position::PositionT = 0;
+        let mut ywrite: piece_position::PositionT = 0;
 
         while y < BOARD_HEIGHT * 2 {
             while completed_lines[y as usize] {
                 y += 1;
-                yr += 1;
+                yread += 1;
             }
 
-            if yr >= BOARD_HEIGHT * 2 {
-                while yw <= BOARD_HEIGHT * 2 {
+            if yread >= BOARD_HEIGHT * 2 {
+                while ywrite <= BOARD_HEIGHT * 2 {
                     for x in 0..BOARD_WIDTH {
-                        self.set_cell(x, yw, false).unwrap();
+                        self.set_cell(x, ywrite, false).unwrap();
                     }
 
-                    yw += 1;
+                    ywrite += 1;
                 }
             }
 
             for x in 0..BOARD_WIDTH {
-                self.set_cell(x, y, self.get_cell(x, yr).unwrap()).unwrap();
+                self.set_cell(x, ywrite, self.get_cell(x, yread).unwrap())
+                    .unwrap();
             }
 
-            yr += 1;
-            yw += 1;
+            yread += 1;
+            ywrite += 1;
 
             y += 1;
         }
     }
 
     pub fn lock_active_piece(&mut self) -> bool {
-        // self.clear_completed_lines();
+        self.clear_completed_lines();
 
         self.spawn_next_piece()
     }

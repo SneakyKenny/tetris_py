@@ -1,5 +1,5 @@
-use termion::{raw::IntoRawMode, input::TermRead};
-use std::io::{Write, stdout, stdin};
+use std::io::{stdin, stdout, Write};
+use termion::{input::TermRead, raw::IntoRawMode};
 
 mod tetris;
 
