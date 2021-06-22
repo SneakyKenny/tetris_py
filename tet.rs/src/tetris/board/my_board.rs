@@ -27,8 +27,7 @@ pub struct Board {
     rng: WyRand,
 }
 
-// TODO: Store dropped pieces types so we can display their color
-
+// TODO: Refacto to make code easier to read
 impl std::fmt::Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         piece_color::reset_color(f)?;
@@ -128,10 +127,7 @@ impl Board {
         x: piece_position::PositionT,
         y: piece_position::PositionT,
     ) -> Option<bool> {
-        match Board::xy_to_index(x, y) {
-            Ok(index) => Some(self.board[index]),
-            Err(_) => None,
-        }
+        Board::xy_to_index(x, y).map(|index| self.board[index])
     }
 
     pub fn set_cell(
@@ -140,9 +136,8 @@ impl Board {
         y: piece_position::PositionT,
         val: bool,
     ) {
-        match Board::xy_to_index(x, y) {
-            Ok(index) => self.board.set(index, val),
-            Err(_) => {}
+        if let Some(index) = Board::xy_to_index(x, y) {
+            self.board.set(index, val);
         }
     }
 
@@ -151,10 +146,7 @@ impl Board {
         x: piece_position::PositionT,
         y: piece_position::PositionT,
     ) -> OptionalTypeT {
-        match Board::xy_to_index(x, y) {
-            Ok(index) => self.piece_types[index],
-            Err(_) => None,
-        }
+        Board::xy_to_index(x, y).and_then(|index| self.piece_types[index])
     }
 
     pub fn set_cell_type(
@@ -163,9 +155,8 @@ impl Board {
         y: piece_position::PositionT,
         val: OptionalTypeT,
     ) {
-        match Board::xy_to_index(x, y) {
-            Ok(index) => self.piece_types[index] = val,
-            Err(_) => {}
+        if let Some(index) = Board::xy_to_index(x, y) {
+            self.piece_types[index] = val;
         }
     }
 
@@ -199,13 +190,12 @@ impl Board {
     }
 
     pub fn get_queue_at(&self, index: usize) -> OptionalTypeT {
-        let max_len: usize = self.queue.len() + self.second_bag.len();
+        let size: usize = self.queue.len();
 
-        if index >= max_len {
+        if index >= size + self.second_bag.len() {
             return None;
         }
 
-        let size: usize = self.queue.len();
         if index < size {
             Some(self.queue[index])
         } else {
@@ -231,20 +221,14 @@ impl Board {
         let spawn_position: piece_position::PiecePosition =
             helper::get_piece_spawn_position(piece_type);
 
-        match self.put_piece_at(piece_type, spawn_position) {
-            true => {
-                self.active_piece_type = piece_type;
-                self.active_piece_position = spawn_position;
-                true
-            }
-            false => false,
-        }
+        self.put_piece_at(piece_type, spawn_position, false)
     }
 
     fn put_piece_at(
         &mut self,
         piece_type: piece_type::PieceType,
         piece_position: piece_position::PiecePosition,
+        enable_on_fail: bool,
     ) -> bool {
         let px: piece_position::PositionT = piece_position.get_x();
         let py: piece_position::PositionT = piece_position.get_y();
@@ -270,14 +254,11 @@ impl Board {
                 let x: piece_position::PositionT = x as piece_position::PositionT;
                 let y: piece_position::PositionT = y as piece_position::PositionT;
 
-                // FIXME: properly check both validity of position and
-                // board state at this position
-                if x + px >= BOARD_WIDTH
-                    || y + py >= BOARD_HEIGHT * 2
-                    || self.get_cell(x + px, y + py).is_none()
-                    || self.get_cell(x + px, y + py).unwrap()
-                {
+                if self.get_cell(x + px, y + py) != Some(false) {
                     self.board = save;
+                    if enable_on_fail {
+                        self.enable_current_piece();
+                    }
                     return false;
                 }
 
@@ -297,17 +278,17 @@ impl Board {
             }
         }
 
+        self.active_piece_type = piece_type;
+        self.active_piece_position = piece_position;
+
         true
     }
 
-    fn xy_to_index(
-        x: piece_position::PositionT,
-        y: piece_position::PositionT,
-    ) -> Result<usize, &'static str> {
-        if x < 0 || y < 0 || x >= BOARD_WIDTH || y >= BOARD_HEIGHT * 2 {
-            Err("Coordinate is outside the board.")
+    fn xy_to_index(x: piece_position::PositionT, y: piece_position::PositionT) -> Option<usize> {
+        if (0..BOARD_WIDTH).contains(&x) && (0..BOARD_HEIGHT * 2).contains(&y) {
+            Some((y * BOARD_WIDTH + x) as usize)
         } else {
-            Ok((y * BOARD_WIDTH + x) as usize)
+            None
         }
     }
 
@@ -350,7 +331,7 @@ impl Board {
     }
 
     fn enable_current_piece(&mut self) {
-        self.put_piece_at(self.active_piece_type, self.active_piece_position);
+        self.put_piece_at(self.active_piece_type, self.active_piece_position, false);
     }
 
     fn rotate_piece(&mut self, dr: piece_position::PositionT) -> bool {
@@ -372,8 +353,7 @@ impl Board {
                 new_rotation,
             );
 
-            if self.put_piece_at(self.active_piece_type, new_position) {
-                self.active_piece_position = new_position;
+            if self.put_piece_at(self.active_piece_type, new_position, false) {
                 return true;
             }
         }
@@ -404,13 +384,7 @@ impl Board {
             self.active_piece_position.get_rotation(),
         );
 
-        if self.put_piece_at(self.active_piece_type, new_position) {
-            self.active_piece_position = new_position;
-            true
-        } else {
-            self.put_piece_at(self.active_piece_type, self.active_piece_position);
-            false
-        }
+        self.put_piece_at(self.active_piece_type, new_position, true)
     }
 
     pub fn hold_active_piece(&mut self) -> bool {
@@ -445,14 +419,9 @@ impl Board {
     }
 
     fn clear_completed_lines(&mut self) {
-        let mut completed_lines: [bool; BOARD_HEIGHT as usize * 2] =
-            [false; BOARD_HEIGHT as usize * 2];
-
-        for y in 0..(BOARD_HEIGHT * 2) {
-            if self.is_line_completed(y) {
-                completed_lines[y as usize] = true;
-            }
-        }
+        let completed_lines: Vec<bool> = (0..(BOARD_HEIGHT * 2))
+            .map(|y| self.is_line_completed(y))
+            .collect();
 
         let mut y: piece_position::PositionT = 0;
         let mut yread: piece_position::PositionT = 0;

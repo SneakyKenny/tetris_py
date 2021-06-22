@@ -33,6 +33,15 @@ fn main() {
         .unwrap();
     }
 
+    write!(
+        stdout,
+        "{}{}{}",
+        termion::clear::All,
+        termion::cursor::Goto(1, 1),
+        tetris
+    )
+    .unwrap();
+
     /*
     // input experiment
     match input.unwrap() {
